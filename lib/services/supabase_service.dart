@@ -83,7 +83,7 @@ class SupabaseService {
     }
   }
 
-  /// UPDATE (PATCH coffee_logs WHERE id = eq.<id>)
+  /// UPDATE (PATCH coffee_logs WHERE id = eq.`<id>`)
   Future<CoffeeLog> updateLog(CoffeeLog log) async {
     if (log.id == null) {
       throw Exception('ID catatan kopi tidak valid untuk diupdate.');
@@ -116,7 +116,7 @@ class SupabaseService {
     }
   }
 
-  /// DELETE (DELETE FROM coffee_logs WHERE id = eq.<id>)
+  /// DELETE (DELETE FROM coffee_logs WHERE id = eq.`<id>`)
   Future<void> deleteLog(int id) async {
     try {
       final uri = Uri.parse('$_tableEndpoint?id=eq.$id');

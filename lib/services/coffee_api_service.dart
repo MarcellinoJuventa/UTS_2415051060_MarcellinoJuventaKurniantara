@@ -6,7 +6,7 @@ import '../models/coffee_item.dart';
 
 /// Service 1: CoffeeApiService
 /// Melakukan HTTP GET ke public REST API SampleAPIs Coffee (/coffee/hot dan /coffee/iced)
-/// dan mengonversi JSON response menjadi List<CoffeeItem>.
+/// dan mengonversi JSON response menjadi `List<CoffeeItem>`.
 class CoffeeApiService {
   final http.Client _client;
 
