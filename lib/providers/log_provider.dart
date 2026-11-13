@@ -3,8 +3,7 @@ import '../models/coffee_log.dart';
 import '../repositories/log_repository.dart';
 
 /// Provider 2: LogProvider
-/// Mengelola state jurnal minuman dari database Supabase:
-/// loading, data, error, filter (Semua / Favorit / Belum Dicoba), serta CRUD.
+/// Manages Brew Log state from Supabase: loading, data, error, status filter, and CRUD.
 class LogProvider extends ChangeNotifier {
   final LogRepository _repository;
 
@@ -15,7 +14,7 @@ class LogProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isSubmitting = false;
   String? _errorMessage;
-  String _statusFilter = 'Semua'; // 'Semua', 'Favorit', 'Belum Dicoba'
+  String _statusFilter = 'All'; // 'All', 'Favorite', 'To Try'
 
   List<CoffeeLog> get logs => List.unmodifiable(_logs);
   bool get isLoading => _isLoading;
@@ -24,19 +23,17 @@ class LogProvider extends ChangeNotifier {
   String get statusFilter => _statusFilter;
 
   List<CoffeeLog> get filteredLogs {
-    if (_statusFilter == 'Favorit') {
+    if (_statusFilter == 'Favorite') {
       return _logs.where((log) => log.isTried).toList();
     }
-    if (_statusFilter == 'Belum Dicoba') {
+    if (_statusFilter == 'To Try') {
       return _logs.where((log) => !log.isTried).toList();
     }
     return List.unmodifiable(_logs);
   }
 
   int get triedCount => _logs.where((l) => l.isTried).length;
-  int get wishlistCount => _logs.where((l) => !logIsTried(l)).length;
-
-  static bool logIsTried(CoffeeLog l) => l.isTried;
+  int get wishlistCount => _logs.where((l) => !l.isTried).length;
 
   double get averageRating {
     if (_logs.isEmpty) return 0.0;
@@ -52,7 +49,6 @@ class LogProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// READ: Mengambil seluruh catatan dari Supabase
   Future<void> fetchLogs() async {
     setLoading(true);
     try {
@@ -63,7 +59,6 @@ class LogProvider extends ChangeNotifier {
     }
   }
 
-  /// CREATE: Menambahkan catatan baru ke Supabase
   Future<bool> addCoffeeLog(CoffeeLog newLog) async {
     setSubmitting(true);
     try {
@@ -78,7 +73,6 @@ class LogProvider extends ChangeNotifier {
     }
   }
 
-  /// UPDATE: Memperbarui catatan di Supabase
   Future<bool> updateCoffeeLog(CoffeeLog updatedLog) async {
     setSubmitting(true);
     try {
@@ -98,7 +92,6 @@ class LogProvider extends ChangeNotifier {
     }
   }
 
-  /// DELETE: Menghapus catatan dari Supabase
   Future<bool> deleteCoffeeLog(int id) async {
     setSubmitting(true);
     try {

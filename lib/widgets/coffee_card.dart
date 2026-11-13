@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 import '../models/coffee_item.dart';
-import 'ingredient_chip.dart';
 
 /// Reusable Widget: CoffeeCard
-/// Kartu menu minuman yang minimalis dan rapi.
+/// Clean, overflow-safe drink menu card.
 class CoffeeCard extends StatelessWidget {
   final CoffeeItem coffee;
   final bool isFavorite;
@@ -34,32 +33,33 @@ class CoffeeCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Foto Minuman
+              // Drink Image
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
                   coffee.image,
-                  width: 88,
-                  height: 88,
+                  width: 84,
+                  height: 84,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => Container(
-                    width: 88,
-                    height: 88,
+                    width: 84,
+                    height: 84,
                     color: AppTheme.softLatte,
                     child: const Icon(
                       Icons.local_cafe_rounded,
                       color: AppTheme.primaryEspresso,
-                      size: 30,
+                      size: 28,
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 14),
 
-              // Informasi Menu
+              // Drink Info (Strict 4-row single-line layout so it never overflows)
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
@@ -87,7 +87,7 @@ class CoffeeCard extends StatelessWidget {
                           onTap: onToggleFavorite,
                           borderRadius: BorderRadius.circular(20),
                           child: Padding(
-                            padding: const EdgeInsets.all(4),
+                            padding: const EdgeInsets.all(2),
                             child: Icon(
                               isFavorite
                                   ? Icons.favorite_rounded
@@ -95,7 +95,7 @@ class CoffeeCard extends StatelessWidget {
                               color: isFavorite
                                   ? Colors.redAccent
                                   : Colors.grey.shade400,
-                              size: 19,
+                              size: 18,
                             ),
                           ),
                         ),
@@ -107,41 +107,44 @@ class CoffeeCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 15.5,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primaryEspresso,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 2),
                     Text(
                       coffee.description,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 12,
                         color: Colors.grey.shade600,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         Expanded(
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: coffee.ingredients
-                                .take(2)
-                                .map((ing) => IngredientChip(label: ing))
-                                .toList(),
+                          child: Text(
+                            coffee.ingredients.take(3).join(' • '),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.accentRoast,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 8),
                         InkWell(
                           onTap: onQuickLog,
                           borderRadius: BorderRadius.circular(8),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
-                              vertical: 4,
+                              vertical: 2,
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -150,16 +153,16 @@ class CoffeeCard extends StatelessWidget {
                                   isLoggedInDb
                                       ? Icons.bookmark_added_rounded
                                       : Icons.add_circle_outline_rounded,
-                                  size: 15,
-                                  color: AppTheme.accentRoast,
+                                  size: 14,
+                                  color: AppTheme.primaryEspresso,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  isLoggedInDb ? 'Tersimpan' : 'Catat',
+                                  isLoggedInDb ? 'Saved' : 'Log',
                                   style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.accentRoast,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.primaryEspresso,
                                   ),
                                 ),
                               ],

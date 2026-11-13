@@ -9,7 +9,7 @@ import '../widgets/state_view_widget.dart';
 import 'add_log_screen.dart';
 import 'detail_screen.dart';
 
-/// Screen 2: Menu Screen (100% Bahasa Indonesia)
+/// Screen 2: Menu Screen
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
 
@@ -21,10 +21,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
   late final TextEditingController _searchController;
 
   static const List<String> _categories = [
-    'Semua',
-    'Kopi',
-    'Non-Kopi',
-    'Minuman Segar',
+    'All',
+    'Coffee',
+    'Non-Coffee',
+    'Mocktail',
   ];
 
   @override
@@ -54,7 +54,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Segarkan Menu',
+            tooltip: 'Refresh Menu',
             onPressed: () => context.read<CoffeeProvider>().fetchCoffeeCatalog(),
             icon: const Icon(Icons.refresh_rounded),
           ),
@@ -62,7 +62,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
       body: Column(
         children: [
-          // Pencarian & Filter Kategori
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -73,7 +72,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   controller: _searchController,
                   onChanged: coffeeProvider.setSearchQuery,
                   decoration: InputDecoration(
-                    hintText: 'Cari menu',
+                    hintText: 'Search menu',
                     prefixIcon: const Icon(Icons.search_rounded, size: 20),
                     suffixIcon: coffeeProvider.searchQuery.isNotEmpty
                         ? IconButton(
@@ -129,7 +128,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   ) {
     if (coffeeProvider.isLoading) {
       return const LoadingStateView(
-        message: 'Memuat daftar menu...',
+        message: 'Loading drink menu...',
       );
     }
 
@@ -143,9 +142,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
     if (items.isEmpty) {
       return EmptyStateView(
         icon: Icons.search_off_rounded,
-        title: 'Menu Tidak Ditemukan',
-        subtitle: 'Coba gunakan kata kunci atau kategori lain.',
-        actionLabel: 'Atur Ulang Filter',
+        title: 'No Drinks Found',
+        subtitle: 'Try another search keyword or category.',
+        actionLabel: 'Reset Filter',
         onAction: () {
           _searchController.clear();
           coffeeProvider.clearFilters();
@@ -157,7 +156,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       onRefresh: coffeeProvider.fetchCoffeeCatalog,
       child: ResponsiveCollectionView(
         itemCount: items.length,
-        mainAxisExtent: 132,
+        mainAxisExtent: 138,
         itemBuilder: (context, index, _) {
           final coffee = items[index];
           final isFav = coffeeProvider.isFavorite(coffee.id);
@@ -180,8 +179,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 SnackBar(
                   content: Text(
                     !isFav
-                        ? '${coffee.title} ditambahkan ke favorit'
-                        : '${coffee.title} dihapus dari favorit',
+                        ? '${coffee.title} added to favorites'
+                        : '${coffee.title} removed from favorites',
                   ),
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 2),

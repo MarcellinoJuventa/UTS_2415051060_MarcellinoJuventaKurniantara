@@ -7,7 +7,7 @@ import '../widgets/ingredient_chip.dart';
 import '../widgets/responsive_layout.dart';
 import 'add_log_screen.dart';
 
-/// Screen 3: Detail Minuman Screen
+/// Screen 3: Drink Detail Screen
 class DetailScreen extends StatelessWidget {
   final CoffeeItem coffee;
 
@@ -32,8 +32,8 @@ class DetailScreen extends StatelessWidget {
                 SnackBar(
                   content: Text(
                     !isFavorite
-                        ? '${coffee.title} ditambahkan ke favorit'
-                        : '${coffee.title} dihapus dari favorit',
+                        ? '${coffee.title} added to favorites'
+                        : '${coffee.title} removed from favorites',
                   ),
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 2),
@@ -141,7 +141,7 @@ class DetailScreen extends StatelessWidget {
             ),
             const Divider(height: 28),
             const Text(
-              'Komposisi',
+              'Ingredients',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -169,7 +169,7 @@ class DetailScreen extends StatelessWidget {
                 },
                 icon: const Icon(Icons.bookmark_add_outlined, size: 18),
                 label: const Text(
-                  'Simpan ke Catatan',
+                  'Save to Brew Log',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),

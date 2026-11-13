@@ -10,17 +10,17 @@ import '../widgets/responsive_layout.dart';
 import 'add_log_screen.dart';
 import 'detail_screen.dart';
 
-/// Screen 1: Beranda Screen (Minimalis, Elegan, & 100% Bahasa Indonesia)
+/// Screen 1: Home Screen (Minimalist & Clean English UI)
 class HomeScreen extends StatelessWidget {
   final ValueChanged<int> onNavigateToTab;
 
   const HomeScreen({super.key, required this.onNavigateToTab});
 
   static const List<String> _categories = [
-    'Semua',
-    'Kopi',
-    'Non-Kopi',
-    'Minuman Segar',
+    'All',
+    'Coffee',
+    'Non-Coffee',
+    'Mocktail',
   ];
 
   @override
@@ -43,7 +43,7 @@ class HomeScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            tooltip: 'Tambah Catatan',
+            tooltip: 'New Log',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AddLogScreen()),
@@ -69,11 +69,10 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Kartu Sambutan Minimalis
                   _buildCleanHero(context, logProvider.logs.length),
                   const SizedBox(height: 20),
 
-                  // Kategori Pilihan
+                  // Category Filter Pills
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -93,12 +92,12 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
 
-                  // Header Daftar Menu Pilihan
+                  // Featured Menu Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Pilihan Menu',
+                        'Featured Drinks',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
@@ -107,7 +106,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () => onNavigateToTab(1),
-                        child: const Text('Lihat Semua'),
+                        child: const Text('See All'),
                       ),
                     ],
                   ),
@@ -124,11 +123,11 @@ class HomeScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           children: [
-                            const Text('Menu belum tersedia.'),
+                            const Text('No drinks available right now.'),
                             const SizedBox(height: 10),
                             ElevatedButton(
                               onPressed: coffeeProvider.fetchCoffeeCatalog,
-                              child: const Text('Muat Menu'),
+                              child: const Text('Reload Menu'),
                             ),
                           ],
                         ),
@@ -144,7 +143,7 @@ class HomeScreen extends StatelessWidget {
                         crossAxisCount: 2,
                         crossAxisSpacing: 14,
                         mainAxisSpacing: 14,
-                        mainAxisExtent: 132,
+                        mainAxisExtent: 138,
                       ),
                       itemBuilder: (context, index) => _buildMenuCard(
                         context,
@@ -189,17 +188,17 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'North',
+                  'NORTH BAR',
                   style: TextStyle(
                     color: AppTheme.warmCaramel,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
                   ),
                 ),
                 const SizedBox(height: 6),
                 const Text(
-                  'Temukan Minuman Favoritmu Hari Ini',
+                  'Crafted Coffee & Signature Drinks',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 19,
@@ -209,7 +208,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '$savedCount catatan racikan tersimpan',
+                  '$savedCount recipes saved in your Brew Log',
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 13,
@@ -228,7 +227,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   onPressed: () => onNavigateToTab(1),
                   child: const Text(
-                    'Jelajahi Menu',
+                    'Explore Menu',
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),

@@ -4,7 +4,7 @@ import '../config/app_config.dart';
 import '../config/app_theme.dart';
 import '../providers/log_provider.dart';
 
-/// Screen 7: Profil Screen (Simple & Elegan)
+/// Screen 7: Profile Screen (Simple & Clean English UI)
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -15,7 +15,7 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Profil',
+          'Profile',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
       ),
@@ -27,7 +27,6 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Kartu Identitas Minimalis
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -78,14 +77,14 @@ class ProfileScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: _buildStatBox(
-                                label: 'Total Catatan',
+                                label: 'Saved Logs',
                                 value: '${logProvider.logs.length}',
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: _buildStatBox(
-                                label: 'Favorit',
+                                label: 'Favorites',
                                 value: '${logProvider.triedCount}',
                               ),
                             ),
@@ -97,17 +96,16 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                // Info Singkat Aplikasi
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(18),
                     child: Column(
                       children: [
-                        _buildSimpleRow('Aplikasi', AppConfig.appName),
+                        _buildSimpleRow('App Name', AppConfig.appName),
                         const Divider(height: 22),
-                        _buildSimpleRow('Mata Kuliah', 'Pemrograman Mobile'),
+                        _buildSimpleRow('Course', 'Mobile Programming'),
                         const Divider(height: 22),
-                        _buildSimpleRow('Versi', '1.0.0'),
+                        _buildSimpleRow('Version', '1.0.0'),
                       ],
                     ),
                   ),

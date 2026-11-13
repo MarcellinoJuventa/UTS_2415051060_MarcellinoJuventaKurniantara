@@ -1,16 +1,15 @@
 /// Model 2: CoffeeLog
-/// Merepresentasikan baris data pada tabel `public.coffee_logs` di Supabase PostgreSQL.
-/// Mendukung pemisahan `recipe` (Resep Racikan yang bisa diedit user) dan `personalNote` (Catatan Pribadi).
+/// Represents a row in the `public.coffee_logs` table on Supabase PostgreSQL.
 class CoffeeLog {
   final int? id;
   final int coffeeId;
   final String coffeeTitle;
   final String coffeeImage;
-  final String category; // 'Hot' atau 'Ice'
+  final String category; // 'Hot' or 'Iced'
   final String sweetnessLevel; // 'No Sugar', 'Less Sweet', 'Normal', 'Extra Sweet'
-  final String customNote; // Gabungan terformat untuk kolom database `custom_note`
+  final String customNote;
   final int rating; // 1 - 5
-  final bool isTried; // true = Favorite, false = Belum Dicoba
+  final bool isTried; // true = Favorite, false = To Try
   final DateTime createdAt;
 
   const CoffeeLog({
@@ -26,20 +25,25 @@ class CoffeeLog {
     required this.createdAt,
   });
 
-  /// Mengambil bagian Resep Racikan dari `customNote`
   String get recipe {
+    if (customNote.startsWith('[Recipe: ')) {
+      final endIdx = customNote.indexOf(']');
+      if (endIdx != -1) {
+        return customNote.substring(9, endIdx).trim();
+      }
+    }
     if (customNote.startsWith('[Resep: ')) {
       final endIdx = customNote.indexOf(']');
       if (endIdx != -1) {
         return customNote.substring(8, endIdx).trim();
       }
     }
-    return 'Espresso, Susu Segar';
+    return 'Espresso, Steamed Milk';
   }
 
-  /// Mengambil bagian Catatan Pribadi dari `customNote`
   String get personalNote {
-    if (customNote.startsWith('[Resep: ')) {
+    if (customNote.startsWith('[Recipe: ') ||
+        customNote.startsWith('[Resep: ')) {
       final endIdx = customNote.indexOf(']');
       if (endIdx != -1 && endIdx + 1 < customNote.length) {
         return customNote.substring(endIdx + 1).trim();
@@ -48,14 +52,13 @@ class CoffeeLog {
     return customNote;
   }
 
-  /// Menggabungkan Resep Racikan dan Catatan Pribadi agar tersimpan rapi di kolom `custom_note` Supabase
   static String encodeRecipeAndNote({
     required String recipe,
     required String note,
   }) {
     final cleanRecipe = recipe.trim().isEmpty ? '-' : recipe.trim();
     final cleanNote = note.trim();
-    return '[Resep: $cleanRecipe] $cleanNote';
+    return '[Recipe: $cleanRecipe] $cleanNote';
   }
 
   factory CoffeeLog.fromJson(Map<String, dynamic> json) {
@@ -95,7 +98,6 @@ class CoffeeLog {
     );
   }
 
-  /// Payload untuk operasi INSERT (Create) ke Supabase
   Map<String, dynamic> toInsertJson() {
     return {
       'coffee_id': coffeeId,
@@ -109,7 +111,6 @@ class CoffeeLog {
     };
   }
 
-  /// Payload untuk operasi UPDATE (Patch) ke Supabase
   Map<String, dynamic> toUpdateJson() {
     return {
       'coffee_title': coffeeTitle,

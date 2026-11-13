@@ -5,8 +5,7 @@ import '../config/app_config.dart';
 import '../models/coffee_item.dart';
 
 /// Service 1: CoffeeApiService
-/// Mengambil katalog minuman dari REST API publik (SampleAPIs Coffee & TheCocktailDB)
-/// dan menormalisasi deskripsi serta bahan komposisi ke Bahasa Indonesia.
+/// Fetches drink catalog from SampleAPIs Coffee & TheCocktailDB Public REST API.
 class CoffeeApiService {
   final http.Client _client;
 
@@ -28,29 +27,23 @@ class CoffeeApiService {
 
       final List<CoffeeItem> catalog = [];
 
-      // 1. Parse Hot Coffee -> 'Kopi'
+      // 1. Parse Hot Coffee -> 'Coffee'
       if (hotRes != null && hotRes.statusCode == 200) {
         final decoded = jsonDecode(hotRes.body);
         if (decoded is List) {
           for (final item in decoded) {
             if (item is Map<String, dynamic>) {
               final coffee =
-                  CoffeeItem.fromJson(item, defaultCategory: 'Kopi');
+                  CoffeeItem.fromJson(item, defaultCategory: 'Coffee');
               if (_isValidEntry(coffee)) {
-                final localizedIng =
-                    coffee.ingredients.map(_translateIngredient).toList();
                 catalog.add(
                   CoffeeItem(
                     id: coffee.id,
                     title: coffee.title,
-                    description: _localizeDescription(
-                      coffee.title,
-                      localizedIng,
-                      'Kopi',
-                    ),
-                    ingredients: localizedIng,
+                    description: coffee.description,
+                    ingredients: coffee.ingredients,
                     image: coffee.image,
-                    category: 'Kopi',
+                    category: 'Coffee',
                   ),
                 );
               }
@@ -59,31 +52,25 @@ class CoffeeApiService {
         }
       }
 
-      // 2. Parse Iced Coffee -> 'Kopi'
+      // 2. Parse Iced Coffee -> 'Coffee'
       if (icedRes != null && icedRes.statusCode == 200) {
         final decoded = jsonDecode(icedRes.body);
         if (decoded is List) {
           for (final item in decoded) {
             if (item is Map<String, dynamic>) {
               final parsed =
-                  CoffeeItem.fromJson(item, defaultCategory: 'Kopi');
+                  CoffeeItem.fromJson(item, defaultCategory: 'Coffee');
               if (_isValidEntry(parsed)) {
                 final uniqueId =
                     parsed.id < 1000 ? parsed.id + 1000 : parsed.id;
-                final localizedIng =
-                    parsed.ingredients.map(_translateIngredient).toList();
                 catalog.add(
                   CoffeeItem(
                     id: uniqueId,
                     title: parsed.title,
-                    description: _localizeDescription(
-                      parsed.title,
-                      localizedIng,
-                      'Kopi',
-                    ),
-                    ingredients: localizedIng,
+                    description: parsed.description,
+                    ingredients: parsed.ingredients,
                     image: parsed.image,
-                    category: 'Kopi',
+                    category: 'Coffee',
                   ),
                 );
               }
@@ -92,7 +79,7 @@ class CoffeeApiService {
         }
       }
 
-      // 3. Parse Non-Coffee (TheCocktailDB c=Cocoa) -> 'Non-Kopi'
+      // 3. Parse Non-Coffee (TheCocktailDB c=Cocoa) -> 'Non-Coffee'
       if (nonCoffeeRes != null && nonCoffeeRes.statusCode == 200) {
         final decoded = jsonDecode(nonCoffeeRes.body);
         if (decoded is Map<String, dynamic> && decoded['drinks'] is List) {
@@ -109,14 +96,14 @@ class CoffeeApiService {
                     id: id,
                     title: title,
                     description:
-                        'Minuman coklat dan susu racikan lembut dengan aroma vanila yang kaya rasa.',
+                        'Rich and velvety cocoa blend crafted with steamed milk and subtle vanilla notes.',
                     ingredients: const [
-                      'Coklat Pilihan',
-                      'Susu Segar',
-                      'Krim Vanila',
+                      'Premium Cocoa',
+                      'Steamed Milk',
+                      'Vanilla Cream',
                     ],
                     image: image,
-                    category: 'Non-Kopi',
+                    category: 'Non-Coffee',
                   ),
                 );
               }
@@ -125,7 +112,7 @@ class CoffeeApiService {
         }
       }
 
-      // 4. Parse Minuman Segar / Mocktail (TheCocktailDB a=Non_Alcoholic) -> 'Minuman Segar'
+      // 4. Parse Mocktail (TheCocktailDB a=Non_Alcoholic) -> 'Mocktail'
       if (mocktailRes != null && mocktailRes.statusCode == 200) {
         final decoded = jsonDecode(mocktailRes.body);
         if (decoded is Map<String, dynamic> && decoded['drinks'] is List) {
@@ -142,15 +129,15 @@ class CoffeeApiService {
                     id: id,
                     title: title,
                     description:
-                        'Minuman segar non-alkohol dari perpaduan sari buah pilihan, sirup manis, dan es batu.',
+                        'Refreshing non-alcoholic bar mocktail crafted with fresh fruit infusion, botanical syrup, and ice.',
                     ingredients: const [
-                      'Sari Buah Segar',
-                      'Sirup Manis',
-                      'Air Soda',
-                      'Es Batu',
+                      'Fruit Infusion',
+                      'Botanical Syrup',
+                      'Sparkling Water',
+                      'Crystal Ice',
                     ],
                     image: image,
-                    category: 'Minuman Segar',
+                    category: 'Mocktail',
                   ),
                 );
               }
@@ -165,7 +152,7 @@ class CoffeeApiService {
 
       return catalog;
     } catch (e) {
-      throw Exception('Gagal memuat daftar menu: $e');
+      throw Exception('Failed to load drink menu: $e');
     }
   }
 
@@ -177,78 +164,6 @@ class CoffeeApiService {
     } catch (_) {
       return null;
     }
-  }
-
-  String _translateIngredient(String raw) {
-    final lower = raw.toLowerCase().trim();
-    const dictionary = {
-      'espresso': 'Espresso',
-      '1 oz espresso': '1 Shot Espresso',
-      '2 oz espresso': 'Double Espresso',
-      'short pulled espresso': 'Espresso Pekat',
-      'long pulled espresso': 'Long Espresso',
-      'steamed milk': 'Susu Kukus',
-      'milk': 'Susu Segar',
-      'cold milk': 'Susu Dingin',
-      'foamed milk': 'Busa Susu',
-      'foam': 'Busa Susu',
-      'hot water': 'Air Panas',
-      'water': 'Air Mineral',
-      'ice': 'Es Batu',
-      'sugar': 'Gula',
-      'brown sugar': 'Gula Aren',
-      'caramel syrup': 'Sirup Karamel',
-      'chocolate': 'Coklat',
-      'cocoa': 'Bubuk Kakao',
-      'whipped cream': 'Krim Kocok',
-      'cream': 'Krim Lembut',
-      'vanilla extract': 'Ekstrak Vanila',
-      'coffee': 'Kopi Hitam',
-      'sweet': 'Pemanis',
-      'traditional': 'Seduhan Tradisional',
-      'panela': 'Gula Tebu',
-      'whiskey': 'Sirup Rum Non-Alkohol',
-    };
-
-    for (final entry in dictionary.entries) {
-      if (lower == entry.key) return entry.value;
-    }
-    if (lower.contains('espresso')) return 'Espresso';
-    if (lower.contains('steamed milk')) return 'Susu Kukus';
-    if (lower.contains('milk')) return 'Susu Segar';
-    if (lower.contains('foam')) return 'Busa Susu';
-    if (lower.contains('water')) return 'Air Panas';
-    if (lower.contains('chocolate') || lower.contains('cocoa')) return 'Coklat';
-    if (lower.contains('caramel')) return 'Sirup Karamel';
-    if (lower.contains('cream')) return 'Krim Lembut';
-    if (lower.contains('ice')) return 'Es Batu';
-    if (lower.contains('sugar')) return 'Gula';
-    return raw;
-  }
-
-  String _localizeDescription(
-    String title,
-    List<String> ingredients,
-    String category,
-  ) {
-    final komp = ingredients.join(', ').toLowerCase();
-    final lowerTitle = title.toLowerCase();
-    if (lowerTitle.contains('latte')) {
-      return 'Minuman kopi lembut dari perpaduan $komp dengan tekstur yang creamy dan seimbang.';
-    }
-    if (lowerTitle.contains('cappuccino')) {
-      return 'Perpaduan klasik espresso dengan susu hangat dan lapisan busa susu tebal di bagian atas.';
-    }
-    if (lowerTitle.contains('americano') || lowerTitle.contains('black')) {
-      return 'Seduhan kopi hitam dengan karakter rasa espresso yang tegas, bersih, dan aromatik.';
-    }
-    if (lowerTitle.contains('mocha') || lowerTitle.contains('mocaccino')) {
-      return 'Kombinasi nikmat antara espresso pekat, coklat pilihan, dan susu hangat yang lembut.';
-    }
-    if (lowerTitle.contains('macchiato')) {
-      return 'Minuman berbasis espresso dengan sentuhan susu lembut dan aroma manis yang khas.';
-    }
-    return 'Minuman $title pilihan yang diracik dari komposisi $komp dengan cita rasa seimbang.';
   }
 
   bool _isValidEntry(CoffeeItem item) {
@@ -268,31 +183,31 @@ class CoffeeApiService {
       id: 1,
       title: 'Caffe Mocha',
       description:
-          'Perpaduan double espresso dengan saus coklat pekat dan susu kukus lembut.',
-      ingredients: ['Double Espresso', 'Coklat Pekat', 'Susu Kukus'],
+          'Rich double espresso blended with dark chocolate sauce and velvety steamed milk.',
+      ingredients: ['Double Espresso', 'Dark Chocolate', 'Steamed Milk'],
       image:
           'https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=600',
-      category: 'Kopi',
+      category: 'Coffee',
     ),
     CoffeeItem(
       id: 2,
-      title: 'Coklat Hangat Spesial',
+      title: 'Signature Hot Chocolate',
       description:
-          'Minuman coklat hangat dengan susu segar dan taburan bubuk kakao.',
-      ingredients: ['Coklat Pilihan', 'Susu Kukus', 'Vanila'],
+          'Warm artisan cocoa crafted with fresh milk and dusted with dark cocoa powder.',
+      ingredients: ['Dark Cocoa', 'Steamed Milk', 'Vanilla'],
       image:
           'https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?w=600',
-      category: 'Non-Kopi',
+      category: 'Non-Coffee',
     ),
     CoffeeItem(
       id: 3,
       title: 'Citrus Berry Cooler',
       description:
-          'Minuman segar perpaduan buah beri, perasan lemon, daun mint, dan air soda.',
-      ingredients: ['Sari Buah Beri', 'Lemon Segar', 'Daun Mint', 'Air Soda'],
+          'Refreshing mocktail combining mixed berries, fresh lemon juice, mint leaves, and sparkling water.',
+      ingredients: ['Mixed Berries', 'Fresh Lemon', 'Mint', 'Sparkling Water'],
       image:
           'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600',
-      category: 'Minuman Segar',
+      category: 'Mocktail',
     ),
   ];
 }

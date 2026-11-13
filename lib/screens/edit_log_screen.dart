@@ -4,7 +4,7 @@ import '../config/app_theme.dart';
 import '../models/coffee_log.dart';
 import '../providers/log_provider.dart';
 
-/// Screen 5: Edit Resep & Catatan Screen (100% Bahasa Indonesia)
+/// Screen 5: Edit Recipe & Notes Screen (Full English)
 class EditLogScreen extends StatefulWidget {
   final CoffeeLog log;
 
@@ -19,16 +19,16 @@ class _EditLogScreenState extends State<EditLogScreen> {
   late final TextEditingController _recipeController;
   late final TextEditingController _noteController;
 
-  late String _servingTemp; // 'Panas' atau 'Dingin'
+  late String _servingTemp; // 'Hot' or 'Iced'
   late String _selectedSweetness;
   late int _selectedRating;
   late bool _isFavorite;
 
   static const List<String> _sweetnessOptions = [
-    'Tanpa Gula',
-    'Sedikit Manis',
+    'No Sugar',
+    'Less Sweet',
     'Normal',
-    'Ekstra Manis',
+    'Extra Sweet',
   ];
 
   @override
@@ -40,8 +40,8 @@ class _EditLogScreenState extends State<EditLogScreen> {
     final rawCat = widget.log.category.toLowerCase();
     _servingTemp =
         (rawCat == 'dingin' || rawCat == 'ice' || rawCat == 'iced')
-            ? 'Dingin'
-            : 'Panas';
+            ? 'Iced'
+            : 'Hot';
 
     _selectedSweetness = _normalizeSweetness(widget.log.sweetnessLevel);
     _selectedRating = widget.log.rating.clamp(1, 5);
@@ -50,12 +50,12 @@ class _EditLogScreenState extends State<EditLogScreen> {
 
   String _normalizeSweetness(String raw) {
     final lower = raw.toLowerCase();
-    if (lower.contains('no') || lower.contains('tanpa')) return 'Tanpa Gula';
+    if (lower.contains('no') || lower.contains('tanpa')) return 'No Sugar';
     if (lower.contains('less') || lower.contains('sedikit')) {
-      return 'Sedikit Manis';
+      return 'Less Sweet';
     }
     if (lower.contains('extra') || lower.contains('ekstra')) {
-      return 'Ekstra Manis';
+      return 'Extra Sweet';
     }
     return 'Normal';
   }
@@ -92,7 +92,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Resep & catatan "${updated.coffeeTitle}" diperbarui'),
+          content: Text('Updated "${updated.coffeeTitle}"'),
           backgroundColor: AppTheme.primaryEspresso,
           behavior: SnackBarBehavior.floating,
         ),
@@ -102,7 +102,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            logProvider.errorMessage ?? 'Gagal memperbarui catatan',
+            logProvider.errorMessage ?? 'Failed to update log',
           ),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
@@ -118,7 +118,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Edit Resep & Catatan',
+          'Edit Recipe & Notes',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
@@ -164,7 +164,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    'Menu Tersimpan',
+                                    'Selected Drink',
                                     style: TextStyle(
                                       fontSize: 11.5,
                                       fontWeight: FontWeight.w600,
@@ -188,9 +188,8 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       ),
                       const SizedBox(height: 18),
 
-                      // Penyajian: Panas atau Dingin
                       const Text(
-                        'Penyajian',
+                        'Serving',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13.5,
@@ -201,14 +200,14 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       SegmentedButton<String>(
                         segments: const [
                           ButtonSegment(
-                            value: 'Panas',
+                            value: 'Hot',
                             icon: Icon(Icons.local_fire_department_outlined),
-                            label: Text('Panas'),
+                            label: Text('Hot'),
                           ),
                           ButtonSegment(
-                            value: 'Dingin',
+                            value: 'Iced',
                             icon: Icon(Icons.ac_unit_rounded),
-                            label: Text('Dingin'),
+                            label: Text('Iced'),
                           ),
                         ],
                         selected: {_servingTemp},
@@ -222,7 +221,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                         isExpanded: true,
                         initialValue: _selectedSweetness,
                         decoration: const InputDecoration(
-                          labelText: 'Tingkat Kemanisan',
+                          labelText: 'Sweetness Level',
                           prefixIcon: Icon(Icons.water_drop_outlined),
                         ),
                         items: _sweetnessOptions
@@ -245,12 +244,12 @@ class _EditLogScreenState extends State<EditLogScreen> {
                         controller: _recipeController,
                         maxLines: 2,
                         decoration: const InputDecoration(
-                          labelText: 'Resep / Takaran Racikan',
+                          labelText: 'Recipe / Ingredients',
                           prefixIcon: Icon(Icons.science_outlined),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Resep racikan wajib diisi';
+                            return 'Recipe is required';
                           }
                           return null;
                         },
@@ -258,7 +257,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       const SizedBox(height: 16),
 
                       const Text(
-                        'Status Catatan',
+                        'Status',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13.5,
@@ -271,12 +270,12 @@ class _EditLogScreenState extends State<EditLogScreen> {
                           ButtonSegment(
                             value: true,
                             icon: Icon(Icons.favorite_border_rounded),
-                            label: Text('Favorit'),
+                            label: Text('Favorite'),
                           ),
                           ButtonSegment(
                             value: false,
                             icon: Icon(Icons.schedule_rounded),
-                            label: Text('Belum Dicoba'),
+                            label: Text('To Try'),
                           ),
                         ],
                         selected: {_isFavorite},
@@ -287,7 +286,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       const SizedBox(height: 16),
 
                       const Text(
-                        'Penilaian Rasa',
+                        'Rating',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13.5,
@@ -317,12 +316,12 @@ class _EditLogScreenState extends State<EditLogScreen> {
                         controller: _noteController,
                         maxLines: 3,
                         decoration: const InputDecoration(
-                          labelText: 'Catatan Pribadi',
+                          labelText: 'Personal Notes',
                           alignLabelWithHint: true,
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Catatan wajib diisi';
+                            return 'Personal note is required';
                           }
                           return null;
                         },
@@ -332,7 +331,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       ElevatedButton(
                         onPressed: isSubmitting ? null : _saveChanges,
                         child: Text(
-                          isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan',
+                          isSubmitting ? 'Saving...' : 'Save Changes',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,

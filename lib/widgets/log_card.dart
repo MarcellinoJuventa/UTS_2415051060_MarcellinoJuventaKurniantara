@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../config/app_theme.dart';
 import '../models/coffee_log.dart';
 
-/// Reusable Widget: LogCard (100% Bahasa Indonesia)
+/// Reusable Widget: LogCard
 class LogCard extends StatelessWidget {
   final CoffeeLog log;
   final VoidCallback onEdit;
@@ -18,23 +18,24 @@ class LogCard extends StatelessWidget {
     required this.onToggleStatus,
   });
 
-  String _localizeServing(String raw) {
+  String _normalizeServing(String raw) {
     final lower = raw.toLowerCase();
     if (lower == 'ice' || lower == 'iced' || lower == 'dingin') {
-      return 'Dingin';
+      return 'Iced';
     }
-    if (lower == 'hot' || lower == 'panas') {
-      return 'Panas';
-    }
-    return raw;
+    return 'Hot';
   }
 
-  String _localizeSweetness(String raw) {
+  String _normalizeSweetness(String raw) {
     final lower = raw.toLowerCase();
-    if (lower.contains('no')) return 'Tanpa Gula';
-    if (lower.contains('less')) return 'Sedikit Manis';
-    if (lower.contains('extra')) return 'Ekstra Manis';
-    return raw;
+    if (lower.contains('no') || lower.contains('tanpa')) return 'No Sugar';
+    if (lower.contains('less') || lower.contains('sedikit')) {
+      return 'Less Sweet';
+    }
+    if (lower.contains('extra') || lower.contains('ekstra')) {
+      return 'Extra Sweet';
+    }
+    return 'Normal';
   }
 
   @override
@@ -90,7 +91,7 @@ class LogCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              _localizeServing(log.category),
+                              _normalizeServing(log.category),
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -113,7 +114,7 @@ class LogCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                log.isTried ? 'Favorit' : 'Belum Dicoba',
+                                log.isTried ? 'Favorite' : 'To Try',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -152,7 +153,7 @@ class LogCard extends StatelessWidget {
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
-                              '• ${_localizeSweetness(log.sweetnessLevel)}',
+                              '• ${_normalizeSweetness(log.sweetnessLevel)}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -180,7 +181,7 @@ class LogCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Resep: ${log.recipe}',
+                    'Recipe: ${log.recipe}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -229,7 +230,7 @@ class LogCard extends StatelessWidget {
                     TextButton.icon(
                       onPressed: onDelete,
                       icon: const Icon(Icons.delete_outline_rounded, size: 16),
-                      label: const Text('Hapus'),
+                      label: const Text('Delete'),
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.red.shade700,
                         visualDensity: VisualDensity.compact,

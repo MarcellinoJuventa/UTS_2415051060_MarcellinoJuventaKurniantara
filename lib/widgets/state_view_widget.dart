@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
 
-/// Reusable Widget 5: StateViewWidget
-/// Menangani tampilan Loading State, Error State, dan Empty State secara konsisten.
+/// Reusable Widget: StateViewWidget
 class LoadingStateView extends StatelessWidget {
   final String message;
 
   const LoadingStateView({
     super.key,
-    this.message = 'Sedang memuat data...',
+    this.message = 'Loading...',
   });
 
   @override
@@ -72,7 +71,7 @@ class ErrorStateView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Gagal Memuat Data',
+                'Unable to Load Data',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -92,7 +91,7 @@ class ErrorStateView extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Muat Ulang Data'),
+                label: const Text('Retry'),
               ),
             ],
           ),

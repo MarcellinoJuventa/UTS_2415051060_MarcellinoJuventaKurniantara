@@ -3,9 +3,9 @@ import '../config/app_config.dart';
 import '../config/app_theme.dart';
 import '../widgets/responsive_layout.dart';
 
-/// Navigasi utama aplikasi North (100% Bahasa Indonesia):
-/// - NavigationBar pada layar Compact (< 600px)
-/// - NavigationRail pada layar Wide/Expanded (>= 600px)
+/// Main Navigation Shell:
+/// - NavigationBar on Compact screens (< 600px)
+/// - NavigationRail on Wide/Expanded screens (>= 600px)
 class MainNavigationShell extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onDestinationSelected;
@@ -24,7 +24,7 @@ class MainNavigationShell extends StatelessWidget {
     NavigationDestination(
       icon: Icon(Icons.home_outlined),
       selectedIcon: Icon(Icons.home_rounded),
-      label: 'Beranda',
+      label: 'Home',
     ),
     NavigationDestination(
       icon: Icon(Icons.local_cafe_outlined),
@@ -34,12 +34,12 @@ class MainNavigationShell extends StatelessWidget {
     NavigationDestination(
       icon: Icon(Icons.bookmark_border_rounded),
       selectedIcon: Icon(Icons.bookmark_rounded),
-      label: 'Catatan',
+      label: 'Brew Log',
     ),
     NavigationDestination(
       icon: Icon(Icons.person_outline_rounded),
       selectedIcon: Icon(Icons.person_rounded),
-      label: 'Profil',
+      label: 'Profile',
     ),
   ];
 
@@ -101,7 +101,7 @@ class MainNavigationShell extends StatelessWidget {
                 NavigationRailDestination(
                   icon: Icon(Icons.home_outlined),
                   selectedIcon: Icon(Icons.home_rounded),
-                  label: Text('Beranda'),
+                  label: Text('Home'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.local_cafe_outlined),
@@ -111,12 +111,12 @@ class MainNavigationShell extends StatelessWidget {
                 NavigationRailDestination(
                   icon: Icon(Icons.bookmark_border_rounded),
                   selectedIcon: Icon(Icons.bookmark_rounded),
-                  label: Text('Catatan'),
+                  label: Text('Brew Log'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.person_outline_rounded),
                   selectedIcon: Icon(Icons.person_rounded),
-                  label: Text('Profil'),
+                  label: Text('Profile'),
                 ),
               ],
             ),
