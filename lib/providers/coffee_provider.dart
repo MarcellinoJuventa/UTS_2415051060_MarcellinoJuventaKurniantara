@@ -1,16 +1,33 @@
 import 'package:flutter/foundation.dart';
 import '../models/coffee_item.dart';
+import '../repositories/coffee_repository.dart';
 
 /// Provider 1: CoffeeProvider
 /// Mengelola state katalog menu kopi bar (loading, data, error, search query,
 /// filter kategori Hot/Iced, dan shared state daftar kopi favorit/bookmark).
 class CoffeeProvider extends ChangeNotifier {
+  final CoffeeRepository _repository;
+
+  CoffeeProvider({CoffeeRepository? repository})
+      : _repository = repository ?? CoffeeRepository();
+
   List<CoffeeItem> _items = [];
   bool _isLoading = false;
   String? _errorMessage;
   String _searchQuery = '';
   String _selectedCategory = 'All'; // 'All', 'Hot', 'Iced'
   final Set<int> _favoriteIds = {1, 2};
+
+  /// Mengambil data katalog minuman kopi dari REST API melalui CoffeeRepository
+  Future<void> fetchCoffeeCatalog() async {
+    setLoadingState(true);
+    try {
+      final result = await _repository.getCoffeeCatalog();
+      setDataState(result);
+    } catch (e) {
+      setErrorState(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
 
   List<CoffeeItem> get allItems => List.unmodifiable(_items);
   bool get isLoading => _isLoading;
