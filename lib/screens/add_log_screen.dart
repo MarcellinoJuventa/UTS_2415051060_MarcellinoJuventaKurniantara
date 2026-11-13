@@ -145,6 +145,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
                       // Jika dibuka tanpa memilih dari menu, sediakan pemilih menu
                       if (widget.initialCoffee == null && menuItems.isNotEmpty) ...[
                         DropdownButtonFormField<int>(
+                          isExpanded: true,
                           initialValue: coffee?.id,
                           decoration: const InputDecoration(
                             labelText: 'Pilih Menu',
@@ -154,7 +155,11 @@ class _AddLogScreenState extends State<AddLogScreen> {
                               .map(
                                 (item) => DropdownMenuItem<int>(
                                   value: item.id,
-                                  child: Text('${item.title} (${item.category})'),
+                                  child: Text(
+                                    '${item.title} (${item.category})',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               )
                               .toList(),
@@ -281,6 +286,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
 
                       // Tingkat Kemanisan
                       DropdownButtonFormField<String>(
+                        isExpanded: true,
                         initialValue: _selectedSweetness,
                         decoration: const InputDecoration(
                           labelText: 'Tingkat Kemanisan',

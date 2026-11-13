@@ -199,6 +199,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       const SizedBox(height: 16),
 
                       DropdownButtonFormField<String>(
+                        isExpanded: true,
                         initialValue: _selectedSweetness,
                         decoration: const InputDecoration(
                           labelText: 'Tingkat Kemanisan',
