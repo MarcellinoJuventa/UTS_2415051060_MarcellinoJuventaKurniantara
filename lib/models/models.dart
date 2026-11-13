@@ -1,1 +1,2 @@
-// Architecture layer: Data Models (REST API & Supabase Database)
+export 'coffee_item.dart';
+export 'coffee_log.dart';
