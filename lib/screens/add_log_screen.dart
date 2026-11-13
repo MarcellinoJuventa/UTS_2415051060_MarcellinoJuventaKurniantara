@@ -3,9 +3,13 @@ import 'package:provider/provider.dart';
 import '../config/app_theme.dart';
 import '../models/coffee_item.dart';
 import '../models/coffee_log.dart';
+import '../providers/coffee_provider.dart';
 import '../providers/log_provider.dart';
 
 /// Screen 4: Add / Create Coffee Log Screen
+/// Ketika user memilih menu dari katalog, Nama & Jenis Minuman (Coffee / Non-Coffee / Mocktail)
+/// sudah fix sebagai kartu info di atas. User hanya memilih penyajian (Hot / Ice),
+/// tingkat kemanisan, status, rating, dan catatan rasa.
 class AddLogScreen extends StatefulWidget {
   final CoffeeItem? initialCoffee;
 
@@ -17,20 +21,13 @@ class AddLogScreen extends StatefulWidget {
 
 class _AddLogScreenState extends State<AddLogScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _titleController;
   late final TextEditingController _noteController;
-  late final TextEditingController _imageController;
 
-  String _selectedCategory = 'Coffee';
+  CoffeeItem? _selectedCoffee;
+  String _servingTemp = 'Hot'; // 'Hot' atau 'Ice'
   String _selectedSweetness = 'Less Sweet';
   int _selectedRating = 5;
   bool _isFavorite = true; // true = Favorite, false = Belum Dicoba
-
-  static const List<String> _categories = [
-    'Coffee',
-    'Non-Coffee',
-    'Mocktail',
-  ];
 
   static const List<String> _sweetnessOptions = [
     'No Sugar',
@@ -42,44 +39,50 @@ class _AddLogScreenState extends State<AddLogScreen> {
   @override
   void initState() {
     super.initState();
-    final coffee = widget.initialCoffee;
-    _titleController = TextEditingController(text: coffee?.title ?? '');
-    _imageController = TextEditingController(
-      text: coffee?.image ??
-          'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600',
-    );
-    _noteController = TextEditingController(
-      text: coffee != null
-          ? 'Komposisi: ${coffee.ingredients.join(", ")}. Catatan tambahan: '
-          : '',
-    );
-    if (coffee != null && _categories.contains(coffee.category)) {
-      _selectedCategory = coffee.category;
+    _selectedCoffee = widget.initialCoffee;
+    _noteController = TextEditingController();
+    _applyDefaultServing(_selectedCoffee);
+  }
+
+  void _applyDefaultServing(CoffeeItem? coffee) {
+    if (coffee != null) {
+      final lowerTitle = coffee.title.toLowerCase();
+      if (coffee.category == 'Mocktail' || lowerTitle.contains('iced')) {
+        _servingTemp = 'Ice';
+      } else {
+        _servingTemp = 'Hot';
+      }
     }
   }
 
   @override
   void dispose() {
-    _titleController.dispose();
     _noteController.dispose();
-    _imageController.dispose();
     super.dispose();
   }
 
   Future<void> _submitForm() async {
+    if (_selectedCoffee == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Silakan pilih menu minuman terlebih dahulu'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
+    final coffee = _selectedCoffee!;
     final logProvider = context.read<LogProvider>();
     final newLog = CoffeeLog(
-      coffeeId: widget.initialCoffee?.id ??
-          DateTime.now().millisecondsSinceEpoch % 100000,
-      coffeeTitle: _titleController.text.trim(),
-      coffeeImage: _imageController.text.trim().isEmpty
-          ? 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600'
-          : _imageController.text.trim(),
-      category: _selectedCategory,
+      coffeeId: coffee.id,
+      coffeeTitle: coffee.title,
+      coffeeImage: coffee.image,
+      category: _servingTemp, // Menyimpan 'Hot' atau 'Ice'
       sweetnessLevel: _selectedSweetness,
       customNote: _noteController.text.trim(),
       rating: _selectedRating,
@@ -115,6 +118,9 @@ class _AddLogScreenState extends State<AddLogScreen> {
   @override
   Widget build(BuildContext context) {
     final isSubmitting = context.watch<LogProvider>().isSubmitting;
+    final menuItems = context.watch<CoffeeProvider>().allItems;
+    _selectedCoffee ??= menuItems.isNotEmpty ? menuItems.first : null;
+    final coffee = _selectedCoffee;
 
     return Scaffold(
       appBar: AppBar(
@@ -136,44 +142,139 @@ class _AddLogScreenState extends State<AddLogScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TextFormField(
-                        controller: _titleController,
-                        decoration: const InputDecoration(
-                          labelText: 'Nama Minuman',
-                          hintText: 'Contoh: Caramel Latte / Berry Cooler',
-                          prefixIcon: Icon(Icons.local_cafe_outlined),
+                      // Jika dibuka tanpa memilih dari menu, sediakan pemilih menu
+                      if (widget.initialCoffee == null && menuItems.isNotEmpty) ...[
+                        DropdownButtonFormField<int>(
+                          initialValue: coffee?.id,
+                          decoration: const InputDecoration(
+                            labelText: 'Pilih Menu',
+                            prefixIcon: Icon(Icons.local_cafe_outlined),
+                          ),
+                          items: menuItems
+                              .map(
+                                (item) => DropdownMenuItem<int>(
+                                  value: item.id,
+                                  child: Text('${item.title} (${item.category})'),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (selectedId) {
+                            if (selectedId == null) return;
+                            final found = menuItems.firstWhere(
+                              (e) => e.id == selectedId,
+                              orElse: () => menuItems.first,
+                            );
+                            setState(() {
+                              _selectedCoffee = found;
+                              _applyDefaultServing(found);
+                            });
+                          },
                         ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Nama minuman wajib diisi';
-                          }
-                          if (value.trim().length < 3) {
-                            return 'Minimal 3 karakter';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 14),
+                      ],
 
-                      // Kategori
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedCategory,
-                        decoration: const InputDecoration(
-                          labelText: 'Kategori',
-                          prefixIcon: Icon(Icons.category_outlined),
-                        ),
-                        items: _categories
-                            .map(
-                              (cat) => DropdownMenuItem(
-                                value: cat,
-                                child: Text(cat),
+                      // Kartu Info Menu yang Sudah Fix (Nama & Jenis: Coffee / Non-Coffee / Mocktail)
+                      if (coffee != null) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppTheme.creamBackground,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  coffee.image,
+                                  width: 64,
+                                  height: 64,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => Container(
+                                    width: 64,
+                                    height: 64,
+                                    color: AppTheme.softLatte,
+                                    child: const Icon(Icons.local_cafe_rounded),
+                                  ),
+                                ),
                               ),
-                            )
-                            .toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() => _selectedCategory = val);
-                          }
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.softLatte,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        coffee.category,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppTheme.accentRoast,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      coffee.title,
+                                      style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.primaryEspresso,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      coffee.ingredients.join(', '),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                      ],
+
+                      // Kategori Penyajian: Hot atau Ice
+                      const Text(
+                        'Kategori Penyajian',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13.5,
+                          color: AppTheme.primaryEspresso,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'Hot',
+                            icon: Icon(Icons.local_fire_department_outlined),
+                            label: Text('Hot'),
+                          ),
+                          ButtonSegment(
+                            value: 'Ice',
+                            icon: Icon(Icons.ac_unit_rounded),
+                            label: Text('Ice'),
+                          ),
+                        ],
+                        selected: {_servingTemp},
+                        onSelectionChanged: (sel) {
+                          setState(() => _servingTemp = sel.first);
                         },
                       ),
                       const SizedBox(height: 16),
@@ -264,16 +365,13 @@ class _AddLogScreenState extends State<AddLogScreen> {
                         controller: _noteController,
                         maxLines: 3,
                         decoration: const InputDecoration(
-                          labelText: 'Catatan Racikan / Rasa',
-                          hintText: 'Tulis catatan rasa atau takaran...',
+                          labelText: 'Catatan Rasa / Racikan',
+                          hintText: 'Tulis catatan rasa atau tambahan topping...',
                           alignLabelWithHint: true,
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'Catatan wajib diisi';
-                          }
-                          if (value.trim().length < 5) {
-                            return 'Minimal 5 karakter';
                           }
                           return null;
                         },

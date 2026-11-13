@@ -5,6 +5,8 @@ import '../models/coffee_log.dart';
 import '../providers/log_provider.dart';
 
 /// Screen 5: Edit Coffee Log Screen
+/// Nama minuman sudah fix pada kartu header di atas, user dapat mengubah
+/// penyajian (Hot / Ice), tingkat kemanisan, status, rating, dan catatan.
 class EditLogScreen extends StatefulWidget {
   final CoffeeLog log;
 
@@ -16,21 +18,12 @@ class EditLogScreen extends StatefulWidget {
 
 class _EditLogScreenState extends State<EditLogScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _titleController;
   late final TextEditingController _noteController;
 
-  late String _selectedCategory;
+  late String _servingTemp; // 'Hot' atau 'Ice'
   late String _selectedSweetness;
   late int _selectedRating;
   late bool _isFavorite;
-
-  static const List<String> _categories = [
-    'Coffee',
-    'Non-Coffee',
-    'Mocktail',
-    'Hot',
-    'Iced',
-  ];
 
   static const List<String> _sweetnessOptions = [
     'No Sugar',
@@ -42,11 +35,9 @@ class _EditLogScreenState extends State<EditLogScreen> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.log.coffeeTitle);
     _noteController = TextEditingController(text: widget.log.customNote);
-    _selectedCategory = _categories.contains(widget.log.category)
-        ? widget.log.category
-        : 'Coffee';
+    final rawCat = widget.log.category.toLowerCase();
+    _servingTemp = (rawCat == 'ice' || rawCat == 'iced') ? 'Ice' : 'Hot';
     _selectedSweetness = _sweetnessOptions.contains(widget.log.sweetnessLevel)
         ? widget.log.sweetnessLevel
         : 'Normal';
@@ -56,7 +47,6 @@ class _EditLogScreenState extends State<EditLogScreen> {
 
   @override
   void dispose() {
-    _titleController.dispose();
     _noteController.dispose();
     super.dispose();
   }
@@ -68,8 +58,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
 
     final logProvider = context.read<LogProvider>();
     final updated = widget.log.copyWith(
-      coffeeTitle: _titleController.text.trim(),
-      category: _selectedCategory,
+      category: _servingTemp,
       sweetnessLevel: _selectedSweetness,
       customNote: _noteController.text.trim(),
       rating: _selectedRating,
@@ -125,39 +114,86 @@ class _EditLogScreenState extends State<EditLogScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TextFormField(
-                        controller: _titleController,
-                        decoration: const InputDecoration(
-                          labelText: 'Nama Minuman',
-                          prefixIcon: Icon(Icons.local_cafe_outlined),
+                      // Info Minuman yang Fix
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppTheme.creamBackground,
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Nama minuman wajib diisi';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedCategory,
-                        decoration: const InputDecoration(
-                          labelText: 'Kategori',
-                          prefixIcon: Icon(Icons.category_outlined),
-                        ),
-                        items: _categories
-                            .map(
-                              (cat) => DropdownMenuItem(
-                                value: cat,
-                                child: Text(cat),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                widget.log.coffeeImage,
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Container(
+                                  width: 60,
+                                  height: 60,
+                                  color: AppTheme.softLatte,
+                                  child: const Icon(Icons.local_cafe_rounded),
+                                ),
                               ),
-                            )
-                            .toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() => _selectedCategory = val);
-                          }
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Menu Pilihan',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.accentRoast,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    widget.log.coffeeTitle,
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.primaryEspresso,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // Penyajian: Hot atau Ice
+                      const Text(
+                        'Penyajian',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13.5,
+                          color: AppTheme.primaryEspresso,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 'Hot',
+                            icon: Icon(Icons.local_fire_department_outlined),
+                            label: Text('Hot'),
+                          ),
+                          ButtonSegment(
+                            value: 'Ice',
+                            icon: Icon(Icons.ac_unit_rounded),
+                            label: Text('Ice'),
+                          ),
+                        ],
+                        selected: {_servingTemp},
+                        onSelectionChanged: (sel) {
+                          setState(() => _servingTemp = sel.first);
                         },
                       ),
                       const SizedBox(height: 16),
@@ -244,7 +280,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                         controller: _noteController,
                         maxLines: 3,
                         decoration: const InputDecoration(
-                          labelText: 'Catatan Racikan / Rasa',
+                          labelText: 'Catatan Rasa / Racikan',
                           alignLabelWithHint: true,
                         ),
                         validator: (value) {
