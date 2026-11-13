@@ -1,30 +1,42 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:north_coffee_bar/main.dart';
+import 'package:north_coffee_bar/config/app_config.dart';
+import 'package:north_coffee_bar/models/coffee_item.dart';
+import 'package:north_coffee_bar/models/coffee_log.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('CoffeeItem JSON parsing and model validation works properly', () {
+    final item = CoffeeItem.fromJson({
+      'id': 10,
+      'title': 'North Iced Latte',
+      'description': 'Double shot espresso with cold fresh milk.',
+      'ingredients': ['Espresso', 'Fresh Milk', 'Ice'],
+      'image': 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600',
+      'category': 'Iced',
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(item.id, 10);
+    expect(item.title, 'North Iced Latte');
+    expect(item.category, 'Iced');
+    expect(item.ingredients.length, 3);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  test('CoffeeLog model serialization for Supabase CRUD works properly', () {
+    final log = CoffeeLog(
+      id: 1,
+      coffeeId: 10,
+      coffeeTitle: 'North Cortado',
+      coffeeImage: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600',
+      category: 'Hot',
+      sweetnessLevel: 'Less Sweet',
+      customNote: 'Rasio 1:1 espresso dan warm oat milk.',
+      rating: 5,
+      isTried: true,
+      createdAt: DateTime(2026, 11, 13),
+    );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    final insertPayload = log.toInsertJson();
+    expect(insertPayload['coffee_title'], 'North Cortado');
+    expect(insertPayload['rating'], 5);
+    expect(AppConfig.studentNim, '2415051060');
   });
 }
