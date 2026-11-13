@@ -5,6 +5,7 @@ import '../models/coffee_log.dart';
 import '../providers/log_provider.dart';
 import '../widgets/log_card.dart';
 import '../widgets/responsive_layout.dart';
+import '../widgets/state_view_widget.dart';
 import 'add_log_screen.dart';
 import 'edit_log_screen.dart';
 
@@ -154,75 +155,30 @@ class SavedLogsScreen extends StatelessWidget {
     List<CoffeeLog> logs,
   ) {
     if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingStateView(
+        message: 'Memuat catatan racikan kopi dari database Supabase...',
+      );
     }
 
     if (provider.errorMessage != null && provider.logs.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.cloud_off_rounded,
-                  size: 52, color: Colors.redAccent),
-              const SizedBox(height: 12),
-              Text(
-                provider.errorMessage!,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: provider.fetchLogs,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Coba Lagi'),
-              ),
-            ],
-          ),
-        ),
+      return ErrorStateView(
+        message: provider.errorMessage!,
+        onRetry: provider.fetchLogs,
       );
     }
 
     if (logs.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.auto_stories_outlined,
-                size: 54,
-                color: AppTheme.accentRoast,
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Belum Ada Catatan Racikan Kopi',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryEspresso,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Tambahkan racikan kopi favorit Anda dari katalog bar atau buat catatan baru.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade700),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const AddLogScreen()),
-                  );
-                },
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Tambah Catatan Kopi'),
-              ),
-            ],
-          ),
-        ),
+      return EmptyStateView(
+        icon: Icons.auto_stories_outlined,
+        title: 'Belum Ada Catatan Racikan Kopi',
+        subtitle:
+            'Tambahkan racikan kopi favorit Anda dari katalog bar atau buat catatan baru ke Supabase.',
+        actionLabel: 'Tambah Catatan Kopi',
+        onAction: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const AddLogScreen()),
+          );
+        },
       );
     }
 
