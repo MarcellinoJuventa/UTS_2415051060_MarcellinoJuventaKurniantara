@@ -4,8 +4,8 @@ import '../config/app_theme.dart';
 import '../widgets/responsive_layout.dart';
 
 /// Navigasi utama aplikasi North:
-/// - Menggunakan NavigationBar (BottomNavigationBar M3) pada layar Compact (< 600px)
-/// - Menggunakan NavigationRail pada layar Wide/Expanded (>= 600px)
+/// - NavigationBar pada layar Compact (< 600px)
+/// - NavigationRail pada layar Wide/Expanded (>= 600px)
 class MainNavigationShell extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onDestinationSelected;
@@ -29,17 +29,17 @@ class MainNavigationShell extends StatelessWidget {
     NavigationDestination(
       icon: Icon(Icons.local_cafe_outlined),
       selectedIcon: Icon(Icons.local_cafe_rounded),
-      label: 'Bar Menu',
+      label: 'Menu',
     ),
     NavigationDestination(
-      icon: Icon(Icons.menu_book_outlined),
-      selectedIcon: Icon(Icons.menu_book_rounded),
+      icon: Icon(Icons.bookmark_border_rounded),
+      selectedIcon: Icon(Icons.bookmark_rounded),
       label: 'Brew Log',
     ),
     NavigationDestination(
       icon: Icon(Icons.person_outline_rounded),
       selectedIcon: Icon(Icons.person_rounded),
-      label: 'Profile',
+      label: 'Profil',
     ),
   ];
 
@@ -80,9 +80,9 @@ class MainNavigationShell extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
-                        Icons.coffee_maker_rounded,
+                        Icons.local_cafe_rounded,
                         color: Colors.white,
-                        size: 24,
+                        size: 22,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -106,17 +106,17 @@ class MainNavigationShell extends StatelessWidget {
                 NavigationRailDestination(
                   icon: Icon(Icons.local_cafe_outlined),
                   selectedIcon: Icon(Icons.local_cafe_rounded),
-                  label: Text('Bar Menu'),
+                  label: Text('Menu'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.menu_book_outlined),
-                  selectedIcon: Icon(Icons.menu_book_rounded),
+                  icon: Icon(Icons.bookmark_border_rounded),
+                  selectedIcon: Icon(Icons.bookmark_rounded),
                   label: Text('Brew Log'),
                 ),
                 NavigationRailDestination(
                   icon: Icon(Icons.person_outline_rounded),
                   selectedIcon: Icon(Icons.person_rounded),
-                  label: Text('Profile'),
+                  label: Text('Profil'),
                 ),
               ],
             ),

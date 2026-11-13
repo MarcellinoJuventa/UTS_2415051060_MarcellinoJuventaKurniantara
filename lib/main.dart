@@ -77,7 +77,7 @@ class _NorthRootScreenState extends State<NorthRootScreen> {
                 );
               },
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Catat Racikan'),
+              label: const Text('Tambah Catatan'),
             )
           : null,
     );

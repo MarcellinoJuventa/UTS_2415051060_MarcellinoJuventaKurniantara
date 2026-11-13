@@ -3,8 +3,8 @@ import '../models/coffee_item.dart';
 import '../repositories/coffee_repository.dart';
 
 /// Provider 1: CoffeeProvider
-/// Mengelola state katalog menu kopi bar (loading, data, error, search query,
-/// filter kategori Hot/Iced, dan shared state daftar kopi favorit/bookmark).
+/// Mengelola state katalog menu minuman (loading, data, error, pencarian,
+/// filter kategori Semua / Coffee / Non-Coffee / Mocktail, serta favorit).
 class CoffeeProvider extends ChangeNotifier {
   final CoffeeRepository _repository;
 
@@ -15,10 +15,9 @@ class CoffeeProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   String _searchQuery = '';
-  String _selectedCategory = 'All'; // 'All', 'Hot', 'Iced'
+  String _selectedCategory = 'Semua'; // 'Semua', 'Coffee', 'Non-Coffee', 'Mocktail'
   final Set<int> _favoriteIds = {1, 2};
 
-  /// Mengambil data katalog minuman kopi dari REST API melalui CoffeeRepository
   Future<void> fetchCoffeeCatalog() async {
     setLoadingState(true);
     try {
@@ -36,19 +35,19 @@ class CoffeeProvider extends ChangeNotifier {
   String get selectedCategory => _selectedCategory;
   Set<int> get favoriteIds => Set.unmodifiable(_favoriteIds);
 
-  /// Daftar kopi hasil filter pencarian & kategori (Hot / Iced)
   List<CoffeeItem> get filteredItems {
-    return _items.where((coffee) {
-      final matchesCategory = _selectedCategory == 'All' ||
-          coffee.category.toLowerCase() == _selectedCategory.toLowerCase();
+    return _items.where((drink) {
+      final matchesCategory = _selectedCategory == 'Semua' ||
+          _selectedCategory == 'All' ||
+          drink.category.toLowerCase() == _selectedCategory.toLowerCase();
 
       if (!matchesCategory) return false;
 
       if (_searchQuery.trim().isEmpty) return true;
       final query = _searchQuery.toLowerCase().trim();
-      final inTitle = coffee.title.toLowerCase().contains(query);
-      final inDesc = coffee.description.toLowerCase().contains(query);
-      final inIngredients = coffee.ingredients.any(
+      final inTitle = drink.title.toLowerCase().contains(query);
+      final inDesc = drink.description.toLowerCase().contains(query);
+      final inIngredients = drink.ingredients.any(
         (ing) => ing.toLowerCase().contains(query),
       );
       return inTitle || inDesc || inIngredients;
@@ -57,12 +56,6 @@ class CoffeeProvider extends ChangeNotifier {
 
   List<CoffeeItem> get favoriteItems =>
       _items.where((item) => _favoriteIds.contains(item.id)).toList();
-
-  int get hotCoffeeCount =>
-      _items.where((c) => c.category.toLowerCase() == 'hot').length;
-
-  int get icedCoffeeCount =>
-      _items.where((c) => c.category.toLowerCase() == 'iced').length;
 
   bool isFavorite(int coffeeId) => _favoriteIds.contains(coffeeId);
 
@@ -87,7 +80,7 @@ class CoffeeProvider extends ChangeNotifier {
 
   void clearFilters() {
     _searchQuery = '';
-    _selectedCategory = 'All';
+    _selectedCategory = 'Semua';
     notifyListeners();
   }
 

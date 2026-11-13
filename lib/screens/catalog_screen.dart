@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../config/app_theme.dart';
 import '../models/coffee_item.dart';
 import '../providers/coffee_provider.dart';
 import '../providers/log_provider.dart';
@@ -10,11 +9,7 @@ import '../widgets/state_view_widget.dart';
 import 'add_log_screen.dart';
 import 'detail_screen.dart';
 
-/// Screen 2: Coffee Catalog / Bar Menu Screen
-/// Menampilkan katalog menu minuman kopi dari REST API (SampleAPIs Coffee),
-/// mendukung pencarian real-time, filter kategori (All / Hot / Iced),
-/// tampilan responsif (ListView pada Compact, GridView pada Wide),
-/// serta penanganan Loading, Error, dan Empty State.
+/// Screen 2: Menu Screen
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
 
@@ -24,6 +19,13 @@ class CatalogScreen extends StatefulWidget {
 
 class _CatalogScreenState extends State<CatalogScreen> {
   late final TextEditingController _searchController;
+
+  static const List<String> _categories = [
+    'Semua',
+    'Coffee',
+    'Non-Coffee',
+    'Mocktail',
+  ];
 
   @override
   void initState() {
@@ -46,19 +48,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
-          children: [
-            Icon(Icons.local_cafe_rounded, size: 22),
-            SizedBox(width: 10),
-            Text(
-              'North Bar Menu (REST API)',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-          ],
+        title: const Text(
+          'Menu',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         actions: [
           IconButton(
-            tooltip: 'Muat Ulang Katalog API',
+            tooltip: 'Segarkan Menu',
             onPressed: () => context.read<CoffeeProvider>().fetchCoffeeCatalog(),
             icon: const Icon(Icons.refresh_rounded),
           ),
@@ -66,10 +62,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
       body: Column(
         children: [
-          // Panel Pencarian & Filter Kategori
+          // Pencarian & Filter Kategori yang bersih
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -77,60 +73,36 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   controller: _searchController,
                   onChanged: coffeeProvider.setSearchQuery,
                   decoration: InputDecoration(
-                    hintText:
-                        'Cari nama kopi, rasa, atau bahan (misal: Espresso, Oat, Caramel)...',
-                    prefixIcon: const Icon(Icons.search_rounded),
+                    hintText: 'Cari menu',
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
                     suffixIcon: coffeeProvider.searchQuery.isNotEmpty
                         ? IconButton(
                             onPressed: () {
                               _searchController.clear();
                               coffeeProvider.setSearchQuery('');
                             },
-                            icon: const Icon(Icons.clear_rounded),
+                            icon: const Icon(Icons.clear_rounded, size: 18),
                           )
                         : null,
                   ),
                 ),
                 const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    const Text(
-                      'Kategori:',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                        color: AppTheme.primaryEspresso,
-                      ),
-                    ),
-                    ChoiceChip(
-                      label: Text('Semua (${coffeeProvider.allItems.length})'),
-                      selected: coffeeProvider.selectedCategory == 'All',
-                      onSelected: (_) => coffeeProvider.setCategory('All'),
-                    ),
-                    ChoiceChip(
-                      avatar: const Icon(
-                        Icons.local_fire_department_rounded,
-                        size: 16,
-                        color: AppTheme.hotAmber,
-                      ),
-                      label: Text('Hot (${coffeeProvider.hotCoffeeCount})'),
-                      selected: coffeeProvider.selectedCategory == 'Hot',
-                      onSelected: (_) => coffeeProvider.setCategory('Hot'),
-                    ),
-                    ChoiceChip(
-                      avatar: const Icon(
-                        Icons.ac_unit_rounded,
-                        size: 16,
-                        color: AppTheme.icedBlue,
-                      ),
-                      label: Text('Iced (${coffeeProvider.icedCoffeeCount})'),
-                      selected: coffeeProvider.selectedCategory == 'Iced',
-                      onSelected: (_) => coffeeProvider.setCategory('Iced'),
-                    ),
-                  ],
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _categories.map((cat) {
+                      final isSelected =
+                          coffeeProvider.selectedCategory == cat;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(cat),
+                          selected: isSelected,
+                          onSelected: (_) => coffeeProvider.setCategory(cat),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ],
             ),
@@ -157,7 +129,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   ) {
     if (coffeeProvider.isLoading) {
       return const LoadingStateView(
-        message: 'Mengambil katalog kopi dari SampleAPIs REST API...',
+        message: 'Memuat daftar menu...',
       );
     }
 
@@ -171,10 +143,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
     if (items.isEmpty) {
       return EmptyStateView(
         icon: Icons.search_off_rounded,
-        title: 'Menu Kopi Tidak Ditemukan',
-        subtitle:
-            'Tidak ada minuman kopi yang cocok dengan kata kunci "${coffeeProvider.searchQuery}" pada kategori ${coffeeProvider.selectedCategory}.',
-        actionLabel: 'Reset Pencarian & Filter',
+        title: 'Menu Tidak Ditemukan',
+        subtitle: 'Coba gunakan kata kunci atau kategori lain.',
+        actionLabel: 'Reset Filter',
         onAction: () {
           _searchController.clear();
           coffeeProvider.clearFilters();
@@ -186,7 +157,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       onRefresh: coffeeProvider.fetchCoffeeCatalog,
       child: ResponsiveCollectionView(
         itemCount: items.length,
-        mainAxisExtent: 195,
+        mainAxisExtent: 132,
         itemBuilder: (context, index, _) {
           final coffee = items[index];
           final isFav = coffeeProvider.isFavorite(coffee.id);
@@ -209,8 +180,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 SnackBar(
                   content: Text(
                     !isFav
-                        ? '"${coffee.title}" disimpan ke Favorit Bar!'
-                        : '"${coffee.title}" dihapus dari Favorit Bar.',
+                        ? '${coffee.title} ditambahkan ke favorit'
+                        : '${coffee.title} dihapus dari favorit',
                   ),
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 2),

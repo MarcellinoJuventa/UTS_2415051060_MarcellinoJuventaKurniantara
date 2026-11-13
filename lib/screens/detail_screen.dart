@@ -3,14 +3,11 @@ import 'package:provider/provider.dart';
 import '../config/app_theme.dart';
 import '../models/coffee_item.dart';
 import '../providers/coffee_provider.dart';
-import '../providers/log_provider.dart';
 import '../widgets/ingredient_chip.dart';
 import '../widgets/responsive_layout.dart';
 import 'add_log_screen.dart';
 
-/// Screen 3: Coffee Detail Screen
-/// Menampilkan detail lengkap minuman kopi dari katalog REST API (passing data `CoffeeItem`),
-/// komposisi bahan bar, status favorit (shared state), serta navigasi ke `AddLogScreen`.
+/// Screen 3: Detail Minuman Screen
 class DetailScreen extends StatelessWidget {
   final CoffeeItem coffee;
 
@@ -19,9 +16,7 @@ class DetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final coffeeProvider = context.watch<CoffeeProvider>();
-    final logProvider = context.watch<LogProvider>();
     final isFavorite = coffeeProvider.isFavorite(coffee.id);
-    final isLogged = logProvider.isCoffeeLogged(coffee.id);
 
     return Scaffold(
       appBar: AppBar(
@@ -31,15 +26,14 @@ class DetailScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            tooltip: isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit',
             onPressed: () {
               coffeeProvider.toggleFavorite(coffee.id);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
                     !isFavorite
-                        ? '"${coffee.title}" ditambahkan ke Favorit Bar!'
-                        : '"${coffee.title}" dihapus dari Favorit Bar.',
+                        ? '${coffee.title} ditambahkan ke favorit'
+                        : '${coffee.title} dihapus dari favorit',
                   ),
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 2),
@@ -50,7 +44,7 @@ class DetailScreen extends StatelessWidget {
               isFavorite
                   ? Icons.favorite_rounded
                   : Icons.favorite_border_rounded,
-              color: isFavorite ? Colors.redAccent : Colors.white,
+              color: isFavorite ? Colors.redAccent : AppTheme.primaryEspresso,
             ),
           ),
         ],
@@ -61,15 +55,15 @@ class DetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildHeroImage(height: 260),
-              const SizedBox(height: 18),
-              _buildDetailContent(context, isLogged),
+              _buildHeroImage(height: 250),
+              const SizedBox(height: 16),
+              _buildDetailContent(context),
             ],
           ),
         ),
         wide: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 980),
+            constraints: const BoxConstraints(maxWidth: 920),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Row(
@@ -77,12 +71,12 @@ class DetailScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 5,
-                    child: _buildHeroImage(height: 380),
+                    child: _buildHeroImage(height: 340),
                   ),
                   const SizedBox(width: 24),
                   Expanded(
                     flex: 6,
-                    child: _buildDetailContent(context, isLogged),
+                    child: _buildDetailContent(context),
                   ),
                 ],
               ),
@@ -95,7 +89,7 @@ class DetailScreen extends StatelessWidget {
 
   Widget _buildHeroImage({required double height}) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(18),
       child: Image.network(
         coffee.image,
         height: height,
@@ -107,7 +101,7 @@ class DetailScreen extends StatelessWidget {
           child: const Center(
             child: Icon(
               Icons.local_cafe_rounded,
-              size: 64,
+              size: 56,
               color: AppTheme.primaryEspresso,
             ),
           ),
@@ -116,71 +110,42 @@ class DetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailContent(BuildContext context, bool isLogged) {
-    final isIced = coffee.category.toLowerCase() == 'iced';
-
+  Widget _buildDetailContent(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(22),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                IngredientChip(
-                  label: '${coffee.category} Coffee',
-                  icon: isIced
-                      ? Icons.ac_unit_rounded
-                      : Icons.local_fire_department_rounded,
-                  isHighlighted: true,
-                ),
-                IngredientChip(
-                  label: 'ID Katalog #${coffee.id}',
-                  icon: Icons.qr_code_rounded,
-                ),
-                if (isLogged)
-                  const IngredientChip(
-                    label: 'Tersimpan di Supabase',
-                    icon: Icons.cloud_done_rounded,
-                  ),
-              ],
+            IngredientChip(
+              label: coffee.category,
+              isHighlighted: true,
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             Text(
               coffee.title,
               style: const TextStyle(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.primaryEspresso,
               ),
             ),
-            const SizedBox(height: 12),
-            const Text(
-              'Karakter Rasa & Deskripsi Bar',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.accentRoast,
-              ),
-            ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 10),
             Text(
               coffee.description,
               style: TextStyle(
-                fontSize: 14.5,
-                color: Colors.grey.shade800,
-                height: 1.55,
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                height: 1.5,
               ),
             ),
             const Divider(height: 28),
             const Text(
-              'Komposisi Racikan Bar (Ingredients)',
+              'Komposisi',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.accentRoast,
+                color: AppTheme.primaryEspresso,
               ),
             ),
             const SizedBox(height: 10),
@@ -188,15 +153,10 @@ class DetailScreen extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: coffee.ingredients
-                  .map(
-                    (ing) => IngredientChip(
-                      label: ing,
-                      icon: Icons.check_circle_outline_rounded,
-                    ),
-                  )
+                  .map((ing) => IngredientChip(label: ing))
                   .toList(),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 26),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -207,9 +167,9 @@ class DetailScreen extends StatelessWidget {
                     ),
                   );
                 },
-                icon: const Icon(Icons.bookmark_add_outlined),
+                icon: const Icon(Icons.bookmark_add_outlined, size: 18),
                 label: const Text(
-                  'Simpan Racikan ke Brew Log (Supabase)',
+                  'Simpan ke Brew Log',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),

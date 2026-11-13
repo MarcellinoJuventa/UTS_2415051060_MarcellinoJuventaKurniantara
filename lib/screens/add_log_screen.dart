@@ -6,8 +6,6 @@ import '../models/coffee_log.dart';
 import '../providers/log_provider.dart';
 
 /// Screen 4: Add / Create Coffee Log Screen
-/// Menampilkan Form dengan validasi untuk menyimpan racikan/catatan kopi baru
-/// ke tabel `coffee_logs` di database Supabase (Operasi CREATE).
 class AddLogScreen extends StatefulWidget {
   final CoffeeItem? initialCoffee;
 
@@ -23,16 +21,22 @@ class _AddLogScreenState extends State<AddLogScreen> {
   late final TextEditingController _noteController;
   late final TextEditingController _imageController;
 
-  String _selectedCategory = 'Hot';
+  String _selectedCategory = 'Coffee';
   String _selectedSweetness = 'Less Sweet';
   int _selectedRating = 5;
-  bool _isTried = true;
+  bool _isFavorite = true; // true = Favorite, false = Belum Dicoba
+
+  static const List<String> _categories = [
+    'Coffee',
+    'Non-Coffee',
+    'Mocktail',
+  ];
 
   static const List<String> _sweetnessOptions = [
-    'No Sugar (0%)',
-    'Less Sweet (50%)',
-    'Normal (100%)',
-    'Extra Sweet (120%)',
+    'No Sugar',
+    'Less Sweet',
+    'Normal',
+    'Extra Sweet',
   ];
 
   @override
@@ -46,12 +50,11 @@ class _AddLogScreenState extends State<AddLogScreen> {
     );
     _noteController = TextEditingController(
       text: coffee != null
-          ? 'Komposisi dasar: ${coffee.ingredients.join(", ")}. Tambahan catatan barista: '
+          ? 'Komposisi: ${coffee.ingredients.join(", ")}. Catatan tambahan: '
           : '',
     );
-    if (coffee != null) {
-      _selectedCategory =
-          coffee.category.toLowerCase() == 'iced' ? 'Iced' : 'Hot';
+    if (coffee != null && _categories.contains(coffee.category)) {
+      _selectedCategory = coffee.category;
     }
   }
 
@@ -65,12 +68,6 @@ class _AddLogScreenState extends State<AddLogScreen> {
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mohon lengkapi seluruh kolom form dengan benar.'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
       return;
     }
 
@@ -86,7 +83,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
       sweetnessLevel: _selectedSweetness,
       customNote: _noteController.text.trim(),
       rating: _selectedRating,
-      isTried: _isTried,
+      isTried: _isFavorite,
       createdAt: DateTime.now(),
     );
 
@@ -96,10 +93,8 @@ class _AddLogScreenState extends State<AddLogScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Berhasil menyimpan "${newLog.coffeeTitle}" ke database Supabase!',
-          ),
-          backgroundColor: Colors.green.shade700,
+          content: Text('Catatan "${newLog.coffeeTitle}" berhasil disimpan'),
+          backgroundColor: AppTheme.primaryEspresso,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -108,7 +103,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            logProvider.errorMessage ?? 'Gagal menyimpan data ke Supabase.',
+            logProvider.errorMessage ?? 'Gagal menyimpan catatan',
           ),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
@@ -124,98 +119,70 @@ class _AddLogScreenState extends State<AddLogScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Tambah Catatan Brew Log',
+          'Tambah Catatan',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
+            constraints: const BoxConstraints(maxWidth: 620),
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(22),
+                padding: const EdgeInsets.all(20),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Form Racikan & Catatan Kopi Bar',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryEspresso,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Simpan resep kustom, tingkat kemanisan, dan evaluasi rasa ke Supabase.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                      const Divider(height: 28),
-
-                      // Nama Minuman Kopi
                       TextFormField(
                         controller: _titleController,
                         decoration: const InputDecoration(
-                          labelText: 'Nama Minuman Kopi *',
-                          hintText: 'Contoh: North Oat Cortado / Iced Americano',
-                          prefixIcon: Icon(Icons.coffee_rounded),
+                          labelText: 'Nama Minuman',
+                          hintText: 'Contoh: Caramel Latte / Berry Cooler',
+                          prefixIcon: Icon(Icons.local_cafe_outlined),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Nama minuman kopi wajib diisi';
+                            return 'Nama minuman wajib diisi';
                           }
                           if (value.trim().length < 3) {
-                            return 'Nama minuman minimal 3 karakter';
+                            return 'Minimal 3 karakter';
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 16),
 
-                      // Kategori (Hot / Iced)
-                      const Text(
-                        'Kategori Penyajian Bar',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13.5,
-                          color: AppTheme.primaryEspresso,
+                      // Kategori
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedCategory,
+                        decoration: const InputDecoration(
+                          labelText: 'Kategori',
+                          prefixIcon: Icon(Icons.category_outlined),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      SegmentedButton<String>(
-                        segments: const [
-                          ButtonSegment(
-                            value: 'Hot',
-                            icon: Icon(Icons.local_fire_department_rounded),
-                            label: Text('Hot Coffee'),
-                          ),
-                          ButtonSegment(
-                            value: 'Iced',
-                            icon: Icon(Icons.ac_unit_rounded),
-                            label: Text('Iced Coffee'),
-                          ),
-                        ],
-                        selected: {_selectedCategory},
-                        onSelectionChanged: (selection) {
-                          setState(() {
-                            _selectedCategory = selection.first;
-                          });
+                        items: _categories
+                            .map(
+                              (cat) => DropdownMenuItem(
+                                value: cat,
+                                child: Text(cat),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() => _selectedCategory = val);
+                          }
                         },
                       ),
                       const SizedBox(height: 16),
 
-                      // Tingkat Kemanisan (Dropdown)
+                      // Tingkat Kemanisan
                       DropdownButtonFormField<String>(
                         initialValue: _selectedSweetness,
                         decoration: const InputDecoration(
-                          labelText: 'Tingkat Kemanisan (Sweetness Level)',
+                          labelText: 'Tingkat Kemanisan',
                           prefixIcon: Icon(Icons.water_drop_outlined),
                         ),
                         items: _sweetnessOptions
@@ -234,16 +201,45 @@ class _AddLogScreenState extends State<AddLogScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Rating Bintang (1 - 5)
+                      // Status: Favorite vs Belum Dicoba
                       const Text(
-                        'Rating Karakter Rasa (1 - 5 Bintang)',
+                        'Status Catatan',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13.5,
                           color: AppTheme.primaryEspresso,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
+                      SegmentedButton<bool>(
+                        segments: const [
+                          ButtonSegment(
+                            value: true,
+                            icon: Icon(Icons.favorite_border_rounded),
+                            label: Text('Favorite'),
+                          ),
+                          ButtonSegment(
+                            value: false,
+                            icon: Icon(Icons.schedule_rounded),
+                            label: Text('Belum Dicoba'),
+                          ),
+                        ],
+                        selected: {_isFavorite},
+                        onSelectionChanged: (sel) {
+                          setState(() => _isFavorite = sel.first);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Rating Bintang
+                      const Text(
+                        'Rating',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13.5,
+                          color: AppTheme.primaryEspresso,
+                        ),
+                      ),
                       Row(
                         children: List.generate(5, (index) {
                           final starValue = index + 1;
@@ -256,91 +252,38 @@ class _AddLogScreenState extends State<AddLogScreen> {
                                   ? Icons.star_rounded
                                   : Icons.star_outline_rounded,
                               color: Colors.amber.shade700,
-                              size: 32,
+                              size: 30,
                             ),
                           );
                         }),
                       ),
                       const SizedBox(height: 8),
 
-                      // Status sudah dicoba / wishlist
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppTheme.creamBackground,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: SwitchListTile(
-                          title: Text(
-                            _isTried
-                                ? 'Status: Sudah Dicoba / Diracik'
-                                : 'Status: Wishlist (Ingin Dicoba)',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                          subtitle: Text(
-                            _isTried
-                                ? 'Minuman ini sudah pernah Anda cicipi di bar'
-                                : 'Disimpan sebagai daftar rencana kopi yang ingin dicoba',
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          value: _isTried,
-                          activeThumbColor: AppTheme.primaryEspresso,
-                          onChanged: (val) => setState(() => _isTried = val),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Catatan Racikan Barista (Wajib & tervalidasi)
+                      // Catatan
                       TextFormField(
                         controller: _noteController,
-                        maxLines: 4,
+                        maxLines: 3,
                         decoration: const InputDecoration(
-                          labelText: 'Catatan Racikan / Tasting Note *',
-                          hintText:
-                              'Tuliskan takaran shot espresso, jenis susu, atau kesan rasa...',
+                          labelText: 'Catatan Racikan / Rasa',
+                          hintText: 'Tulis catatan rasa atau takaran...',
                           alignLabelWithHint: true,
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Catatan racikan wajib diisi';
+                            return 'Catatan wajib diisi';
                           }
-                          if (value.trim().length < 10) {
-                            return 'Catatan racikan minimal 10 karakter agar informatif';
+                          if (value.trim().length < 5) {
+                            return 'Minimal 5 karakter';
                           }
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 22),
 
-                      // URL Gambar (Opsional)
-                      TextFormField(
-                        controller: _imageController,
-                        decoration: const InputDecoration(
-                          labelText: 'URL Foto Minuman (Opsional)',
-                          prefixIcon: Icon(Icons.image_outlined),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Tombol Submit
-                      ElevatedButton.icon(
+                      ElevatedButton(
                         onPressed: isSubmitting ? null : _submitForm,
-                        icon: isSubmitting
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(Icons.cloud_upload_outlined),
-                        label: Text(
-                          isSubmitting
-                              ? 'Menyimpan ke Supabase...'
-                              : 'Simpan ke Brew Log (Supabase)',
+                        child: Text(
+                          isSubmitting ? 'Menyimpan...' : 'Simpan Catatan',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,

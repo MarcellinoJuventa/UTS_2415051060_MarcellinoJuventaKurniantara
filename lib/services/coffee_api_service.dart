@@ -5,8 +5,9 @@ import '../config/app_config.dart';
 import '../models/coffee_item.dart';
 
 /// Service 1: CoffeeApiService
-/// Melakukan HTTP GET ke public REST API SampleAPIs Coffee (/coffee/hot dan /coffee/iced)
-/// dan mengonversi JSON response menjadi `List<CoffeeItem>`.
+/// Mengambil katalog minuman dari 2 sumber REST API publik:
+/// 1. SampleAPIs Coffee (/coffee/hot & /coffee/iced) -> Kategori 'Coffee'
+/// 2. TheCocktailDB Public API (Cocoa & Non_Alcoholic) -> Kategori 'Non-Coffee' & 'Mocktail'
 class CoffeeApiService {
   final http.Client _client;
 
@@ -15,56 +16,36 @@ class CoffeeApiService {
   Future<List<CoffeeItem>> fetchAllCoffeeDrinks() async {
     try {
       final responses = await Future.wait([
-        _client
-            .get(Uri.parse(AppConfig.hotCoffeeApiUrl))
-            .timeout(const Duration(seconds: 12)),
-        _client
-            .get(Uri.parse(AppConfig.icedCoffeeApiUrl))
-            .timeout(const Duration(seconds: 12)),
+        _safeGet(AppConfig.hotCoffeeApiUrl),
+        _safeGet(AppConfig.icedCoffeeApiUrl),
+        _safeGet(AppConfig.nonCoffeeApiUrl),
+        _safeGet(AppConfig.mocktailApiUrl),
       ]);
 
-      final hotResponse = responses[0];
-      final icedResponse = responses[1];
+      final hotRes = responses[0];
+      final icedRes = responses[1];
+      final nonCoffeeRes = responses[2];
+      final mocktailRes = responses[3];
 
-      if (hotResponse.statusCode != 200 && icedResponse.statusCode != 200) {
-        throw Exception(
-          'Gagal memuat katalog kopi dari REST API (Status ${hotResponse.statusCode}).',
-        );
-      }
+      final List<CoffeeItem> catalog = [];
 
-      final List<CoffeeItem> combined = [];
-
-      if (hotResponse.statusCode == 200) {
-        final decodedHot = jsonDecode(hotResponse.body);
-        if (decodedHot is List) {
-          for (final item in decodedHot) {
+      // 1. Parse Hot Coffee -> 'Coffee'
+      if (hotRes != null && hotRes.statusCode == 200) {
+        final decoded = jsonDecode(hotRes.body);
+        if (decoded is List) {
+          for (final item in decoded) {
             if (item is Map<String, dynamic>) {
-              final coffee = CoffeeItem.fromJson(item, defaultCategory: 'Hot');
-              if (_isValidCoffeeEntry(coffee)) {
-                combined.add(coffee);
-              }
-            }
-          }
-        }
-      }
-
-      if (icedResponse.statusCode == 200) {
-        final decodedIced = jsonDecode(icedResponse.body);
-        if (decodedIced is List) {
-          for (final item in decodedIced) {
-            if (item is Map<String, dynamic>) {
-              final parsed = CoffeeItem.fromJson(item, defaultCategory: 'Iced');
-              if (_isValidCoffeeEntry(parsed)) {
-                // Pastikan ID unik saat digabung dengan Hot Coffee
-                final uniqueId = parsed.id < 1000 ? parsed.id + 1000 : parsed.id;
-                combined.add(
+              final coffee =
+                  CoffeeItem.fromJson(item, defaultCategory: 'Coffee');
+              if (_isValidEntry(coffee)) {
+                catalog.add(
                   CoffeeItem(
-                    id: uniqueId,
-                    title: parsed.title,
-                    description: parsed.description,
-                    ingredients: parsed.ingredients,
-                    image: parsed.image,
-                    category: 'Iced',
+                    id: coffee.id,
+                    title: coffee.title,
+                    description: coffee.description,
+                    ingredients: coffee.ingredients,
+                    image: coffee.image,
+                    category: 'Coffee',
                   ),
                 );
               }
@@ -73,21 +54,121 @@ class CoffeeApiService {
         }
       }
 
-      if (combined.isEmpty) {
+      // 2. Parse Iced Coffee -> 'Coffee'
+      if (icedRes != null && icedRes.statusCode == 200) {
+        final decoded = jsonDecode(icedRes.body);
+        if (decoded is List) {
+          for (final item in decoded) {
+            if (item is Map<String, dynamic>) {
+              final parsed =
+                  CoffeeItem.fromJson(item, defaultCategory: 'Coffee');
+              if (_isValidEntry(parsed)) {
+                final uniqueId =
+                    parsed.id < 1000 ? parsed.id + 1000 : parsed.id;
+                catalog.add(
+                  CoffeeItem(
+                    id: uniqueId,
+                    title: parsed.title,
+                    description: parsed.description,
+                    ingredients: parsed.ingredients,
+                    image: parsed.image,
+                    category: 'Coffee',
+                  ),
+                );
+              }
+            }
+          }
+        }
+      }
+
+      // 3. Parse Non-Coffee (TheCocktailDB c=Cocoa) -> 'Non-Coffee'
+      if (nonCoffeeRes != null && nonCoffeeRes.statusCode == 200) {
+        final decoded = jsonDecode(nonCoffeeRes.body);
+        if (decoded is Map<String, dynamic> && decoded['drinks'] is List) {
+          final drinks = decoded['drinks'] as List;
+          for (final raw in drinks.take(10)) {
+            if (raw is Map<String, dynamic>) {
+              final id =
+                  int.tryParse(raw['idDrink']?.toString() ?? '') ?? 2000;
+              final title = (raw['strDrink'] ?? '').toString().trim();
+              final image = (raw['strDrinkThumb'] ?? '').toString().trim();
+              if (title.isNotEmpty && image.startsWith('http')) {
+                catalog.add(
+                  CoffeeItem(
+                    id: id,
+                    title: title,
+                    description:
+                        'Minuman coklat & susu hangat racikan spesial dengan tekstur creamy yang lembut.',
+                    ingredients: const [
+                      'Premium Cocoa',
+                      'Fresh Milk',
+                      'Vanilla Cream',
+                    ],
+                    image: image,
+                    category: 'Non-Coffee',
+                  ),
+                );
+              }
+            }
+          }
+        }
+      }
+
+      // 4. Parse Mocktail (TheCocktailDB a=Non_Alcoholic) -> 'Mocktail'
+      if (mocktailRes != null && mocktailRes.statusCode == 200) {
+        final decoded = jsonDecode(mocktailRes.body);
+        if (decoded is Map<String, dynamic> && decoded['drinks'] is List) {
+          final drinks = decoded['drinks'] as List;
+          for (final raw in drinks.take(14)) {
+            if (raw is Map<String, dynamic>) {
+              final id =
+                  int.tryParse(raw['idDrink']?.toString() ?? '') ?? 3000;
+              final title = (raw['strDrink'] ?? '').toString().trim();
+              final image = (raw['strDrinkThumb'] ?? '').toString().trim();
+              if (title.isNotEmpty && image.startsWith('http')) {
+                catalog.add(
+                  CoffeeItem(
+                    id: id,
+                    title: title,
+                    description:
+                        'Minuman segar non-alkohol dari perpaduan sari buah pilihan, sirup botanikal, dan es kristal.',
+                    ingredients: const [
+                      'Fresh Fruit Blend',
+                      'Botanical Syrup',
+                      'Sparkling Water',
+                      'Crystal Ice',
+                    ],
+                    image: image,
+                    category: 'Mocktail',
+                  ),
+                );
+              }
+            }
+          }
+        }
+      }
+
+      if (catalog.isEmpty) {
         return _curatedFallbackCatalog;
       }
 
-      return combined;
-    } on TimeoutException {
-      throw Exception(
-        'Koneksi ke server katalog REST API melewati batas waktu (timeout). Periksa koneksi internet Anda.',
-      );
+      return catalog;
     } catch (e) {
-      throw Exception('Terjadi kendala saat mengambil data REST API: $e');
+      throw Exception('Gagal memuat menu minuman: $e');
     }
   }
 
-  bool _isValidCoffeeEntry(CoffeeItem item) {
+  Future<http.Response?> _safeGet(String url) async {
+    try {
+      return await _client
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 12));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _isValidEntry(CoffeeItem item) {
     final lower = item.title.toLowerCase();
     if (lower.isEmpty ||
         lower == 'north signature brew' ||
@@ -104,19 +185,31 @@ class CoffeeApiService {
       id: 1,
       title: 'Caffe Mocha',
       description:
-          'Perpaduan rich double espresso dengan saus dark chocolate hangat dan steamed milk lembut.',
-      ingredients: ['Double Espresso', 'Dark Chocolate', 'Steamed Milk', 'Cocoa Dust'],
-      image: 'https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=600',
-      category: 'Hot',
+          'Perpaduan double espresso dengan saus dark chocolate dan steamed milk.',
+      ingredients: ['Double Espresso', 'Dark Chocolate', 'Steamed Milk'],
+      image:
+          'https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=600',
+      category: 'Coffee',
     ),
     CoffeeItem(
       id: 2,
-      title: 'Iced Caramel Macchiato',
+      title: 'Signature Hot Chocolate',
       description:
-          'Susu segar dingin dengan sirup vanila, dituang espresso shot di atasnya dan saus karamel.',
-      ingredients: ['Espresso Shot', 'Cold Milk', 'Vanilla Syrup', 'Caramel Drizzle', 'Ice'],
-      image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600',
-      category: 'Iced',
+          'Minuman coklat hangat dengan susu segar dan taburan cocoa powder.',
+      ingredients: ['Dark Cocoa', 'Steamed Milk', 'Vanilla'],
+      image:
+          'https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?w=600',
+      category: 'Non-Coffee',
+    ),
+    CoffeeItem(
+      id: 3,
+      title: 'Citrus Berry Cooler',
+      description:
+          'Mocktail segar perpaduan buah beri, perasan lemon, daun mint, dan soda.',
+      ingredients: ['Mixed Berries', 'Fresh Lemon', 'Mint Leaves', 'Soda'],
+      image:
+          'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=600',
+      category: 'Mocktail',
     ),
   ];
 }

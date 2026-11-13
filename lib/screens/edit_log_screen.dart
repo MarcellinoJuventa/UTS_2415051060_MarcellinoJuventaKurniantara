@@ -5,8 +5,6 @@ import '../models/coffee_log.dart';
 import '../providers/log_provider.dart';
 
 /// Screen 5: Edit Coffee Log Screen
-/// Menerima objek `CoffeeLog` melalui parameter konstruktor (passing data antar-screen)
-/// dan memperbarui catatan di tabel `coffee_logs` Supabase (Operasi UPDATE).
 class EditLogScreen extends StatefulWidget {
   final CoffeeLog log;
 
@@ -24,13 +22,17 @@ class _EditLogScreenState extends State<EditLogScreen> {
   late String _selectedCategory;
   late String _selectedSweetness;
   late int _selectedRating;
-  late bool _isTried;
+  late bool _isFavorite;
+
+  static const List<String> _categories = [
+    'Coffee',
+    'Non-Coffee',
+    'Mocktail',
+    'Hot',
+    'Iced',
+  ];
 
   static const List<String> _sweetnessOptions = [
-    'No Sugar (0%)',
-    'Less Sweet (50%)',
-    'Normal (100%)',
-    'Extra Sweet (120%)',
     'No Sugar',
     'Less Sweet',
     'Normal',
@@ -42,13 +44,14 @@ class _EditLogScreenState extends State<EditLogScreen> {
     super.initState();
     _titleController = TextEditingController(text: widget.log.coffeeTitle);
     _noteController = TextEditingController(text: widget.log.customNote);
-    _selectedCategory =
-        widget.log.category.toLowerCase() == 'iced' ? 'Iced' : 'Hot';
+    _selectedCategory = _categories.contains(widget.log.category)
+        ? widget.log.category
+        : 'Coffee';
     _selectedSweetness = _sweetnessOptions.contains(widget.log.sweetnessLevel)
         ? widget.log.sweetnessLevel
-        : 'Normal (100%)';
+        : 'Normal';
     _selectedRating = widget.log.rating.clamp(1, 5);
-    _isTried = widget.log.isTried;
+    _isFavorite = widget.log.isTried;
   }
 
   @override
@@ -70,7 +73,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
       sweetnessLevel: _selectedSweetness,
       customNote: _noteController.text.trim(),
       rating: _selectedRating,
-      isTried: _isTried,
+      isTried: _isFavorite,
     );
 
     final success = await logProvider.updateCoffeeLog(updated);
@@ -79,10 +82,8 @@ class _EditLogScreenState extends State<EditLogScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Perubahan pada "${updated.coffeeTitle}" berhasil disimpan ke Supabase!',
-          ),
-          backgroundColor: Colors.green.shade700,
+          content: Text('Catatan "${updated.coffeeTitle}" diperbarui'),
+          backgroundColor: AppTheme.primaryEspresso,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -91,7 +92,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            logProvider.errorMessage ?? 'Gagal memperbarui catatan di Supabase.',
+            logProvider.errorMessage ?? 'Gagal memperbarui catatan',
           ),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
@@ -107,122 +108,60 @@ class _EditLogScreenState extends State<EditLogScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Edit Catatan Racikan Kopi',
+          'Edit Catatan',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
+            constraints: const BoxConstraints(maxWidth: 620),
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(22),
+                padding: const EdgeInsets.all(20),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              widget.log.coffeeImage,
-                              width: 64,
-                              height: 64,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Container(
-                                width: 64,
-                                height: 64,
-                                color: AppTheme.softLatte,
-                                child: const Icon(
-                                  Icons.coffee_rounded,
-                                  color: AppTheme.primaryEspresso,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'ID Catatan Database: #${widget.log.id ?? "-"}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                const Text(
-                                  'Perbarui Detail Racikan & Evaluasi Rasa',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.primaryEspresso,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 28),
-
-                      // Nama Minuman
                       TextFormField(
                         controller: _titleController,
                         decoration: const InputDecoration(
-                          labelText: 'Nama Minuman Kopi *',
-                          prefixIcon: Icon(Icons.coffee_rounded),
+                          labelText: 'Nama Minuman',
+                          prefixIcon: Icon(Icons.local_cafe_outlined),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Nama minuman kopi tidak boleh kosong';
-                          }
-                          if (value.trim().length < 3) {
-                            return 'Nama minuman minimal 3 karakter';
+                            return 'Nama minuman wajib diisi';
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 16),
 
-                      // Kategori (Hot / Iced)
-                      const Text(
-                        'Kategori Penyajian',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13.5,
-                          color: AppTheme.primaryEspresso,
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedCategory,
+                        decoration: const InputDecoration(
+                          labelText: 'Kategori',
+                          prefixIcon: Icon(Icons.category_outlined),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      SegmentedButton<String>(
-                        segments: const [
-                          ButtonSegment(
-                            value: 'Hot',
-                            icon: Icon(Icons.local_fire_department_rounded),
-                            label: Text('Hot Coffee'),
-                          ),
-                          ButtonSegment(
-                            value: 'Iced',
-                            icon: Icon(Icons.ac_unit_rounded),
-                            label: Text('Iced Coffee'),
-                          ),
-                        ],
-                        selected: {_selectedCategory},
-                        onSelectionChanged: (selection) {
-                          setState(() => _selectedCategory = selection.first);
+                        items: _categories
+                            .map(
+                              (cat) => DropdownMenuItem(
+                                value: cat,
+                                child: Text(cat),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() => _selectedCategory = val);
+                          }
                         },
                       ),
                       const SizedBox(height: 16),
 
-                      // Tingkat Kemanisan
                       DropdownButtonFormField<String>(
                         initialValue: _selectedSweetness,
                         decoration: const InputDecoration(
@@ -245,16 +184,43 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Rating Bintang
                       const Text(
-                        'Rating Karakter Rasa (1 - 5 Bintang)',
+                        'Status Catatan',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13.5,
                           color: AppTheme.primaryEspresso,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
+                      SegmentedButton<bool>(
+                        segments: const [
+                          ButtonSegment(
+                            value: true,
+                            icon: Icon(Icons.favorite_border_rounded),
+                            label: Text('Favorite'),
+                          ),
+                          ButtonSegment(
+                            value: false,
+                            icon: Icon(Icons.schedule_rounded),
+                            label: Text('Belum Dicoba'),
+                          ),
+                        ],
+                        selected: {_isFavorite},
+                        onSelectionChanged: (sel) {
+                          setState(() => _isFavorite = sel.first);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text(
+                        'Rating',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13.5,
+                          color: AppTheme.primaryEspresso,
+                        ),
+                      ),
                       Row(
                         children: List.generate(5, (index) {
                           final starValue = index + 1;
@@ -267,72 +233,33 @@ class _EditLogScreenState extends State<EditLogScreen> {
                                   ? Icons.star_rounded
                                   : Icons.star_outline_rounded,
                               color: Colors.amber.shade700,
-                              size: 32,
+                              size: 30,
                             ),
                           );
                         }),
                       ),
                       const SizedBox(height: 8),
 
-                      // Status
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppTheme.creamBackground,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: SwitchListTile(
-                          title: Text(
-                            _isTried
-                                ? 'Status: Sudah Dicoba / Diracik'
-                                : 'Status: Wishlist (Ingin Dicoba)',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                          value: _isTried,
-                          activeThumbColor: AppTheme.primaryEspresso,
-                          onChanged: (val) => setState(() => _isTried = val),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Catatan Racikan
                       TextFormField(
                         controller: _noteController,
-                        maxLines: 4,
+                        maxLines: 3,
                         decoration: const InputDecoration(
-                          labelText: 'Catatan Racikan / Tasting Note *',
+                          labelText: 'Catatan Racikan / Rasa',
                           alignLabelWithHint: true,
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Catatan racikan tidak boleh kosong';
-                          }
-                          if (value.trim().length < 10) {
-                            return 'Catatan racikan minimal 10 karakter';
+                            return 'Catatan wajib diisi';
                           }
                           return null;
                         },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 22),
 
-                      ElevatedButton.icon(
+                      ElevatedButton(
                         onPressed: isSubmitting ? null : _saveChanges,
-                        icon: isSubmitting
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(Icons.save_outlined),
-                        label: Text(
-                          isSubmitting
-                              ? 'Menyimpan Perubahan...'
-                              : 'Simpan Perubahan (Update Supabase)',
+                        child: Text(
+                          isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,

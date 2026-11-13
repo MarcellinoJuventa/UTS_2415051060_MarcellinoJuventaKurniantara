@@ -3,9 +3,8 @@ import 'package:intl/intl.dart';
 import '../config/app_theme.dart';
 import '../models/coffee_log.dart';
 
-/// Reusable Widget 2: LogCard
-/// Menampilkan item catatan racikan kopi dari database Supabase lengkap dengan
-/// badge kategori, rating bintang, tingkat kemanisan, status, serta tombol Edit & Delete.
+/// Reusable Widget: LogCard
+/// Menampilkan item catatan minuman dari Brew Log dengan status Favorite / Belum Dicoba.
 class LogCard extends StatelessWidget {
   final CoffeeLog log;
   final VoidCallback onEdit;
@@ -22,7 +21,6 @@ class LogCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIced = log.category.toLowerCase() == 'iced';
     final formattedDate = DateFormat('dd MMM yyyy').format(log.createdAt);
 
     return Card(
@@ -40,17 +38,17 @@ class LogCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
                     log.coffeeImage,
-                    width: 72,
-                    height: 72,
+                    width: 68,
+                    height: 68,
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => Container(
-                      width: 72,
-                      height: 72,
+                      width: 68,
+                      height: 68,
                       color: AppTheme.softLatte,
                       child: const Icon(
-                        Icons.coffee_rounded,
+                        Icons.local_cafe_rounded,
                         color: AppTheme.primaryEspresso,
-                        size: 30,
+                        size: 28,
                       ),
                     ),
                   ),
@@ -70,25 +68,21 @@ class LogCard extends StatelessWidget {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: isIced
-                                  ? AppTheme.icedBlue.withValues(alpha: 0.12)
-                                  : AppTheme.hotAmber.withValues(alpha: 0.14),
-                              borderRadius: BorderRadius.circular(8),
+                              color: AppTheme.softLatte,
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               log.category,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: isIced
-                                    ? AppTheme.icedBlue
-                                    : AppTheme.hotAmber,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.primaryEspresso,
                               ),
                             ),
                           ),
                           InkWell(
                             onTap: onToggleStatus,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -96,36 +90,36 @@ class LogCard extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: log.isTried
-                                    ? Colors.green.withValues(alpha: 0.14)
-                                    : Colors.orange.withValues(alpha: 0.16),
-                                borderRadius: BorderRadius.circular(8),
+                                    ? Colors.amber.withValues(alpha: 0.18)
+                                    : Colors.grey.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                log.isTried ? 'Sudah Dicoba' : 'Wishlist',
+                                log.isTried ? 'Favorite' : 'Belum Dicoba',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: log.isTried
-                                      ? Colors.green.shade800
-                                      : Colors.orange.shade900,
+                                      ? Colors.brown.shade800
+                                      : Colors.grey.shade700,
                                 ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 5),
                       Text(
                         log.coffeeTitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 15.5,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.primaryEspresso,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Row(
                         children: [
                           ...List.generate(5, (i) {
@@ -133,7 +127,7 @@ class LogCard extends StatelessWidget {
                               i < log.rating
                                   ? Icons.star_rounded
                                   : Icons.star_outline_rounded,
-                              size: 16,
+                              size: 15,
                               color: Colors.amber.shade700,
                             );
                           }),
@@ -145,7 +139,7 @@ class LogCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade700,
+                                color: Colors.grey.shade600,
                               ),
                             ),
                           ),
@@ -169,21 +163,21 @@ class LogCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12.5,
                   color: Colors.grey.shade800,
                   height: 1.35,
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Dicatat: $formattedDate',
+                  formattedDate,
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade500,
                   ),
                 ),
                 Row(
@@ -191,7 +185,7 @@ class LogCard extends StatelessWidget {
                   children: [
                     TextButton.icon(
                       onPressed: onEdit,
-                      icon: const Icon(Icons.edit_outlined, size: 17),
+                      icon: const Icon(Icons.edit_outlined, size: 16),
                       label: const Text('Edit'),
                       style: TextButton.styleFrom(
                         foregroundColor: AppTheme.primaryEspresso,
@@ -200,7 +194,7 @@ class LogCard extends StatelessWidget {
                     ),
                     TextButton.icon(
                       onPressed: onDelete,
-                      icon: const Icon(Icons.delete_outline_rounded, size: 17),
+                      icon: const Icon(Icons.delete_outline_rounded, size: 16),
                       label: const Text('Hapus'),
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.red.shade700,

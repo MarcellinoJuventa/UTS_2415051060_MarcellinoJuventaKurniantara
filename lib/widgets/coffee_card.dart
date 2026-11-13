@@ -3,9 +3,8 @@ import '../config/app_theme.dart';
 import '../models/coffee_item.dart';
 import 'ingredient_chip.dart';
 
-/// Reusable Widget 4: CoffeeCard
-/// Kartu item katalog kopi dari REST API yang mendukung interaksi klik detail,
-/// tombol favorit (shared state), dan tombol cepat tambah ke Brew Log.
+/// Reusable Widget: CoffeeCard
+/// Kartu menu minuman yang minimalis dan rapi.
 class CoffeeCard extends StatelessWidget {
   final CoffeeItem coffee;
   final bool isFavorite;
@@ -26,8 +25,6 @@ class CoffeeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIced = coffee.category.toLowerCase() == 'iced';
-
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -35,57 +32,31 @@ class CoffeeCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Gambar Minuman Kopi
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      coffee.image,
-                      width: 96,
-                      height: 110,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(
-                        width: 96,
-                        height: 110,
-                        color: AppTheme.softLatte,
-                        child: const Icon(
-                          Icons.local_cafe_rounded,
-                          color: AppTheme.primaryEspresso,
-                          size: 36,
-                        ),
-                      ),
+              // Foto Minuman
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  coffee.image,
+                  width: 88,
+                  height: 88,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => Container(
+                    width: 88,
+                    height: 88,
+                    color: AppTheme.softLatte,
+                    child: const Icon(
+                      Icons.local_cafe_rounded,
+                      color: AppTheme.primaryEspresso,
+                      size: 30,
                     ),
                   ),
-                  Positioned(
-                    top: 6,
-                    left: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isIced ? AppTheme.icedBlue : AppTheme.hotAmber,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        coffee.category,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
               const SizedBox(width: 14),
 
-              // Detail Teks & Interaksi
+              // Informasi Menu
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,93 +64,105 @@ class CoffeeCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Expanded(
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.softLatte,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                           child: Text(
-                            coffee.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            coffee.category,
                             style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryEspresso,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.accentRoast,
                             ),
                           ),
                         ),
-                        IconButton(
-                          visualDensity: VisualDensity.compact,
-                          tooltip: isFavorite
-                              ? 'Hapus dari Favorit Bar'
-                              : 'Simpan ke Favorit Bar',
-                          onPressed: onToggleFavorite,
-                          icon: Icon(
-                            isFavorite
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
-                            color: isFavorite
-                                ? Colors.redAccent
-                                : Colors.grey.shade500,
-                            size: 20,
+                        const Spacer(),
+                        InkWell(
+                          onTap: onToggleFavorite,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(
+                              isFavorite
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
+                              color: isFavorite
+                                  ? Colors.redAccent
+                                  : Colors.grey.shade400,
+                              size: 19,
+                            ),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      coffee.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryEspresso,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
                     Text(
                       coffee.description,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: Colors.grey.shade700,
-                        height: 1.35,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: coffee.ingredients
-                          .take(3)
-                          .map((ing) => IngredientChip(label: ing))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 8),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        if (isLoggedInDb)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.check_circle_rounded,
-                                size: 14,
-                                color: Colors.green.shade700,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Tersimpan di Log',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.green.shade700,
-                                ),
-                              ),
-                            ],
-                          )
-                        else
-                          const SizedBox.shrink(),
-                        TextButton.icon(
-                          onPressed: onQuickLog,
-                          style: TextButton.styleFrom(
-                            visualDensity: VisualDensity.compact,
-                            foregroundColor: AppTheme.accentRoast,
+                        Expanded(
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: coffee.ingredients
+                                .take(2)
+                                .map((ing) => IngredientChip(label: ing))
+                                .toList(),
                           ),
-                          icon: const Icon(Icons.note_add_outlined, size: 16),
-                          label: const Text(
-                            'Catat Racikan',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                        ),
+                        InkWell(
+                          onTap: onQuickLog,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isLoggedInDb
+                                      ? Icons.bookmark_added_rounded
+                                      : Icons.add_circle_outline_rounded,
+                                  size: 15,
+                                  color: AppTheme.accentRoast,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  isLoggedInDb ? 'Tersimpan' : 'Catat',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.accentRoast,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
