@@ -1,1 +1,2 @@
-// Architecture layer: Data Services (HTTP REST API & Supabase Client)
+export 'coffee_api_service.dart';
+export 'supabase_service.dart';

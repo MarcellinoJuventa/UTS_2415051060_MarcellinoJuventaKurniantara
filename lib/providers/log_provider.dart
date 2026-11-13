@@ -1,10 +1,16 @@
 import 'package:flutter/foundation.dart';
 import '../models/coffee_log.dart';
+import '../repositories/log_repository.dart';
 
 /// Provider 2: LogProvider
 /// Mengelola state jurnal racikan kopi pribadi (Brew Log) dari database Supabase:
 /// loading, data, error, filter status (All / Tried / Wishlist), serta operasi CRUD.
 class LogProvider extends ChangeNotifier {
+  final LogRepository _repository;
+
+  LogProvider({LogRepository? repository})
+      : _repository = repository ?? LogRepository();
+
   List<CoffeeLog> _logs = [];
   bool _isLoading = false;
   bool _isSubmitting = false;
@@ -42,6 +48,67 @@ class LogProvider extends ChangeNotifier {
   void setStatusFilter(String filter) {
     _statusFilter = filter;
     notifyListeners();
+  }
+
+  /// READ: Mengambil seluruh catatan racikan kopi dari Supabase
+  Future<void> fetchLogs() async {
+    setLoading(true);
+    try {
+      final result = await _repository.getAllLogs();
+      setLogsState(result);
+    } catch (e) {
+      setError(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  /// CREATE: Menambahkan catatan racikan kopi baru ke Supabase
+  Future<bool> addCoffeeLog(CoffeeLog newLog) async {
+    setSubmitting(true);
+    try {
+      final created = await _repository.addLog(newLog);
+      _logs = [created, ..._logs];
+      _errorMessage = null;
+      setSubmitting(false);
+      return true;
+    } catch (e) {
+      setError(e.toString().replaceFirst('Exception: ', ''));
+      return false;
+    }
+  }
+
+  /// UPDATE: Memperbarui catatan racikan kopi di Supabase
+  Future<bool> updateCoffeeLog(CoffeeLog updatedLog) async {
+    setSubmitting(true);
+    try {
+      final saved = await _repository.editLog(updatedLog);
+      final index = _logs.indexWhere((item) => item.id == saved.id);
+      if (index != -1) {
+        final copy = List<CoffeeLog>.from(_logs);
+        copy[index] = saved;
+        _logs = copy;
+      }
+      _errorMessage = null;
+      setSubmitting(false);
+      return true;
+    } catch (e) {
+      setError(e.toString().replaceFirst('Exception: ', ''));
+      return false;
+    }
+  }
+
+  /// DELETE: Menghapus catatan racikan kopi dari Supabase
+  Future<bool> deleteCoffeeLog(int id) async {
+    setSubmitting(true);
+    try {
+      await _repository.removeLog(id);
+      _logs = _logs.where((item) => item.id != id).toList();
+      _errorMessage = null;
+      setSubmitting(false);
+      return true;
+    } catch (e) {
+      setError(e.toString().replaceFirst('Exception: ', ''));
+      return false;
+    }
   }
 
   @protected

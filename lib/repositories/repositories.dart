@@ -1,1 +1,2 @@
-// Architecture layer: Repositories (Data abstraction between Services and Providers)
+export 'coffee_repository.dart';
+export 'log_repository.dart';
