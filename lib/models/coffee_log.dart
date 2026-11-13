@@ -1,16 +1,16 @@
 /// Model 2: CoffeeLog
 /// Merepresentasikan baris data pada tabel `public.coffee_logs` di Supabase PostgreSQL.
-/// Digunakan untuk operasi CRUD (Create, Read, Update, Delete).
+/// Mendukung pemisahan `recipe` (Resep Racikan yang bisa diedit user) dan `personalNote` (Catatan Pribadi).
 class CoffeeLog {
   final int? id;
   final int coffeeId;
   final String coffeeTitle;
   final String coffeeImage;
-  final String category; // 'Hot' atau 'Iced'
-  final String sweetnessLevel; // 'Normal', 'Less Sweet', 'No Sugar', 'Extra Sweet'
-  final String customNote;
+  final String category; // 'Hot' atau 'Ice'
+  final String sweetnessLevel; // 'No Sugar', 'Less Sweet', 'Normal', 'Extra Sweet'
+  final String customNote; // Gabungan terformat untuk kolom database `custom_note`
   final int rating; // 1 - 5
-  final bool isTried; // true = Sudah Dicoba, false = Wishlist / Ingin Coba
+  final bool isTried; // true = Favorite, false = Belum Dicoba
   final DateTime createdAt;
 
   const CoffeeLog({
@@ -25,6 +25,38 @@ class CoffeeLog {
     required this.isTried,
     required this.createdAt,
   });
+
+  /// Mengambil bagian Resep Racikan dari `customNote`
+  String get recipe {
+    if (customNote.startsWith('[Resep: ')) {
+      final endIdx = customNote.indexOf(']');
+      if (endIdx != -1) {
+        return customNote.substring(8, endIdx).trim();
+      }
+    }
+    return 'Espresso, Fresh Milk';
+  }
+
+  /// Mengambil bagian Catatan Pribadi dari `customNote`
+  String get personalNote {
+    if (customNote.startsWith('[Resep: ')) {
+      final endIdx = customNote.indexOf(']');
+      if (endIdx != -1 && endIdx + 1 < customNote.length) {
+        return customNote.substring(endIdx + 1).trim();
+      }
+    }
+    return customNote;
+  }
+
+  /// Menggabungkan Resep Racikan dan Catatan Pribadi agar tersimpan rapi di kolom `custom_note` Supabase
+  static String encodeRecipeAndNote({
+    required String recipe,
+    required String note,
+  }) {
+    final cleanRecipe = recipe.trim().isEmpty ? '-' : recipe.trim();
+    final cleanNote = note.trim();
+    return '[Resep: $cleanRecipe] $cleanNote';
+  }
 
   factory CoffeeLog.fromJson(Map<String, dynamic> json) {
     final rawId = json['id'];

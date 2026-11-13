@@ -5,8 +5,7 @@ import '../models/coffee_log.dart';
 import '../providers/log_provider.dart';
 
 /// Screen 5: Edit Coffee Log Screen
-/// Nama minuman sudah fix pada kartu header di atas, user dapat mengubah
-/// penyajian (Hot / Ice), tingkat kemanisan, status, rating, dan catatan.
+/// Memungkinkan user mengedit Resep Racikan maupun Catatan Pribadi pada item Brew Log.
 class EditLogScreen extends StatefulWidget {
   final CoffeeLog log;
 
@@ -18,6 +17,7 @@ class EditLogScreen extends StatefulWidget {
 
 class _EditLogScreenState extends State<EditLogScreen> {
   final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _recipeController;
   late final TextEditingController _noteController;
 
   late String _servingTemp; // 'Hot' atau 'Ice'
@@ -35,7 +35,8 @@ class _EditLogScreenState extends State<EditLogScreen> {
   @override
   void initState() {
     super.initState();
-    _noteController = TextEditingController(text: widget.log.customNote);
+    _recipeController = TextEditingController(text: widget.log.recipe);
+    _noteController = TextEditingController(text: widget.log.personalNote);
     final rawCat = widget.log.category.toLowerCase();
     _servingTemp = (rawCat == 'ice' || rawCat == 'iced') ? 'Ice' : 'Hot';
     _selectedSweetness = _sweetnessOptions.contains(widget.log.sweetnessLevel)
@@ -47,6 +48,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
 
   @override
   void dispose() {
+    _recipeController.dispose();
     _noteController.dispose();
     super.dispose();
   }
@@ -57,10 +59,15 @@ class _EditLogScreenState extends State<EditLogScreen> {
     }
 
     final logProvider = context.read<LogProvider>();
+    final combinedNote = CoffeeLog.encodeRecipeAndNote(
+      recipe: _recipeController.text,
+      note: _noteController.text,
+    );
+
     final updated = widget.log.copyWith(
       category: _servingTemp,
       sweetnessLevel: _selectedSweetness,
-      customNote: _noteController.text.trim(),
+      customNote: combinedNote,
       rating: _selectedRating,
       isTried: _isFavorite,
     );
@@ -71,7 +78,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Catatan "${updated.coffeeTitle}" diperbarui'),
+          content: Text('Resep & catatan "${updated.coffeeTitle}" diperbarui'),
           backgroundColor: AppTheme.primaryEspresso,
           behavior: SnackBarBehavior.floating,
         ),
@@ -97,7 +104,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Edit Catatan',
+          'Edit Resep & Catatan',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
@@ -144,7 +151,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    'Menu Pilihan',
+                                    'Menu Tersimpan',
                                     style: TextStyle(
                                       fontSize: 11.5,
                                       fontWeight: FontWeight.w600,
@@ -221,6 +228,23 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       ),
                       const SizedBox(height: 16),
 
+                      // Edit Resep Racikan
+                      TextFormField(
+                        controller: _recipeController,
+                        maxLines: 2,
+                        decoration: const InputDecoration(
+                          labelText: 'Resep / Takaran Racikan',
+                          prefixIcon: Icon(Icons.science_outlined),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Resep racikan wajib diisi';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
                       const Text(
                         'Status Catatan',
                         style: TextStyle(
@@ -277,11 +301,12 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       ),
                       const SizedBox(height: 8),
 
+                      // Edit Catatan Pribadi
                       TextFormField(
                         controller: _noteController,
                         maxLines: 3,
                         decoration: const InputDecoration(
-                          labelText: 'Catatan Rasa / Racikan',
+                          labelText: 'Catatan Pribadi',
                           alignLabelWithHint: true,
                         ),
                         validator: (value) {

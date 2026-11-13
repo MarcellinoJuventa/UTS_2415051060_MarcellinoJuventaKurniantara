@@ -154,7 +154,7 @@ class SavedLogsScreen extends StatelessWidget {
       onRefresh: provider.fetchLogs,
       child: ResponsiveCollectionView(
         itemCount: logs.length,
-        mainAxisExtent: 225,
+        mainAxisExtent: 245,
         itemBuilder: (context, index, _) {
           final log = logs[index];
           return LogCard(

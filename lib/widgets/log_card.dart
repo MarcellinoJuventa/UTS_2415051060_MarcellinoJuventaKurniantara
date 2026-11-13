@@ -4,7 +4,8 @@ import '../config/app_theme.dart';
 import '../models/coffee_log.dart';
 
 /// Reusable Widget: LogCard
-/// Menampilkan item catatan minuman dari Brew Log dengan status Favorite / Belum Dicoba.
+/// Menampilkan item catatan minuman dari Brew Log lengkap dengan Resep Racikan
+/// hasil kustomisasi user dan Catatan Pribadi.
 class LogCard extends StatelessWidget {
   final CoffeeLog log;
   final VoidCallback onEdit;
@@ -38,17 +39,17 @@ class LogCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
                     log.coffeeImage,
-                    width: 68,
-                    height: 68,
+                    width: 64,
+                    height: 64,
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => Container(
-                      width: 68,
-                      height: 68,
+                      width: 64,
+                      height: 64,
                       color: AppTheme.softLatte,
                       child: const Icon(
                         Icons.local_cafe_rounded,
                         color: AppTheme.primaryEspresso,
-                        size: 28,
+                        size: 26,
                       ),
                     ),
                   ),
@@ -65,7 +66,7 @@ class LogCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
-                              vertical: 3,
+                              vertical: 2,
                             ),
                             decoration: BoxDecoration(
                               color: AppTheme.softLatte,
@@ -86,7 +87,7 @@ class LogCard extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
-                                vertical: 3,
+                                vertical: 2,
                               ),
                               decoration: BoxDecoration(
                                 color: log.isTried
@@ -151,6 +152,7 @@ class LogCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
+            // Kotak Resep & Catatan
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(10),
@@ -158,18 +160,34 @@ class LogCard extends StatelessWidget {
                 color: AppTheme.creamBackground,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Text(
-                log.customNote,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: Colors.grey.shade800,
-                  height: 1.35,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Resep: ${log.recipe}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.accentRoast,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    log.personalNote,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: Colors.grey.shade800,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
