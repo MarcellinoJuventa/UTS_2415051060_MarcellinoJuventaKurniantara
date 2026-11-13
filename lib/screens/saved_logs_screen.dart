@@ -9,13 +9,13 @@ import '../widgets/state_view_widget.dart';
 import 'add_log_screen.dart';
 import 'edit_log_screen.dart';
 
-/// Screen 6: Brew Log Screen
+/// Screen 6: Catatan Racikan Screen (100% Bahasa Indonesia)
 class SavedLogsScreen extends StatelessWidget {
   const SavedLogsScreen({super.key});
 
   static const List<String> _filters = [
     'Semua',
-    'Favorite',
+    'Favorit',
     'Belum Dicoba',
   ];
 
@@ -27,7 +27,7 @@ class SavedLogsScreen extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Hapus Catatan'),
         content: Text(
-          'Hapus "${log.coffeeTitle}" dari Brew Log?',
+          'Hapus "${log.coffeeTitle}" dari daftar catatan?',
         ),
         actions: [
           TextButton(
@@ -74,7 +74,7 @@ class SavedLogsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Brew Log',
+          'Catatan Racikan',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         actions: [
@@ -87,7 +87,7 @@ class SavedLogsScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Filter: Semua, Favorite, Belum Dicoba
+          // Filter: Semua, Favorit, Belum Dicoba
           Container(
             width: double.infinity,
             color: Colors.white,
@@ -125,7 +125,7 @@ class SavedLogsScreen extends StatelessWidget {
   ) {
     if (provider.isLoading) {
       return const LoadingStateView(
-        message: 'Memuat catatan...',
+        message: 'Memuat daftar catatan...',
       );
     }
 
@@ -172,7 +172,7 @@ class SavedLogsScreen extends StatelessWidget {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      'Status "${log.coffeeTitle}" diubah ke ${updated.isTried ? "Favorite" : "Belum Dicoba"}',
+                      'Status "${log.coffeeTitle}" diubah ke ${updated.isTried ? "Favorit" : "Belum Dicoba"}',
                     ),
                     behavior: SnackBarBehavior.floating,
                   ),

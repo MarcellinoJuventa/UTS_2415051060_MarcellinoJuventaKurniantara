@@ -6,9 +6,7 @@ import '../models/coffee_log.dart';
 import '../providers/coffee_provider.dart';
 import '../providers/log_provider.dart';
 
-/// Screen 4: Add / Create Coffee Log Screen
-/// Otomatis mengisi Resep Bawaan dari menu yang dipilih (dan bisa diedit/dikustomisasi oleh user),
-/// serta menyediakan kolom Catatan Pribadi.
+/// Screen 4: Tambah Catatan Screen (100% Bahasa Indonesia)
 class AddLogScreen extends StatefulWidget {
   final CoffeeItem? initialCoffee;
 
@@ -24,16 +22,16 @@ class _AddLogScreenState extends State<AddLogScreen> {
   late final TextEditingController _noteController;
 
   CoffeeItem? _selectedCoffee;
-  String _servingTemp = 'Hot'; // 'Hot' atau 'Ice'
-  String _selectedSweetness = 'Less Sweet';
+  String _servingTemp = 'Panas'; // 'Panas' atau 'Dingin'
+  String _selectedSweetness = 'Sedikit Manis';
   int _selectedRating = 5;
-  bool _isFavorite = true; // true = Favorite, false = Belum Dicoba
+  bool _isFavorite = true; // true = Favorit, false = Belum Dicoba
 
   static const List<String> _sweetnessOptions = [
-    'No Sugar',
-    'Less Sweet',
+    'Tanpa Gula',
+    'Sedikit Manis',
     'Normal',
-    'Extra Sweet',
+    'Ekstra Manis',
   ];
 
   @override
@@ -52,10 +50,10 @@ class _AddLogScreenState extends State<AddLogScreen> {
   void _applyDefaultServing(CoffeeItem? coffee) {
     if (coffee != null) {
       final lowerTitle = coffee.title.toLowerCase();
-      if (coffee.category == 'Mocktail' || lowerTitle.contains('iced')) {
-        _servingTemp = 'Ice';
+      if (coffee.category == 'Minuman Segar' || lowerTitle.contains('iced')) {
+        _servingTemp = 'Dingin';
       } else {
-        _servingTemp = 'Hot';
+        _servingTemp = 'Panas';
       }
     }
   }
@@ -139,7 +137,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Tambah ke Brew Log',
+          'Tambah Catatan',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
@@ -156,7 +154,6 @@ class _AddLogScreenState extends State<AddLogScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Jika dibuka tanpa memilih dari menu, sediakan pemilih menu
                       if (widget.initialCoffee == null &&
                           menuItems.isNotEmpty) ...[
                         DropdownButtonFormField<int>(
@@ -195,7 +192,6 @@ class _AddLogScreenState extends State<AddLogScreen> {
                         const SizedBox(height: 14),
                       ],
 
-                      // Kartu Info Menu yang Sudah Fix (Nama & Jenis)
                       if (coffee != null) ...[
                         Container(
                           padding: const EdgeInsets.all(12),
@@ -261,7 +257,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
                         const SizedBox(height: 18),
                       ],
 
-                      // Penyajian: Hot atau Ice
+                      // Penyajian: Panas atau Dingin
                       const Text(
                         'Penyajian',
                         style: TextStyle(
@@ -274,14 +270,14 @@ class _AddLogScreenState extends State<AddLogScreen> {
                       SegmentedButton<String>(
                         segments: const [
                           ButtonSegment(
-                            value: 'Hot',
+                            value: 'Panas',
                             icon: Icon(Icons.local_fire_department_outlined),
-                            label: Text('Hot'),
+                            label: Text('Panas'),
                           ),
                           ButtonSegment(
-                            value: 'Ice',
+                            value: 'Dingin',
                             icon: Icon(Icons.ac_unit_rounded),
-                            label: Text('Ice'),
+                            label: Text('Dingin'),
                           ),
                         ],
                         selected: {_servingTemp},
@@ -315,14 +311,14 @@ class _AddLogScreenState extends State<AddLogScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Resep Menu (Otomatis terisi dari menu, dan bisa diedit user)
+                      // Resep Racikan
                       TextFormField(
                         controller: _recipeController,
                         maxLines: 2,
                         decoration: const InputDecoration(
                           labelText: 'Resep / Takaran Racikan (Bisa Diedit)',
                           hintText:
-                              'Contoh: Double Espresso, Oat Milk, Vanilla Syrup',
+                              'Contoh: Espresso, Susu Oat, Sirup Karamel',
                           prefixIcon: Icon(Icons.science_outlined),
                         ),
                         validator: (value) {
@@ -334,7 +330,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Status: Favorite vs Belum Dicoba
+                      // Status: Favorit vs Belum Dicoba
                       const Text(
                         'Status Catatan',
                         style: TextStyle(
@@ -349,7 +345,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
                           ButtonSegment(
                             value: true,
                             icon: Icon(Icons.favorite_border_rounded),
-                            label: Text('Favorite'),
+                            label: Text('Favorit'),
                           ),
                           ButtonSegment(
                             value: false,
@@ -366,7 +362,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
 
                       // Rating Bintang
                       const Text(
-                        'Rating',
+                        'Penilaian Rasa',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13.5,
@@ -413,7 +409,7 @@ class _AddLogScreenState extends State<AddLogScreen> {
                       ElevatedButton(
                         onPressed: isSubmitting ? null : _submitForm,
                         child: Text(
-                          isSubmitting ? 'Menyimpan...' : 'Simpan ke Brew Log',
+                          isSubmitting ? 'Menyimpan...' : 'Simpan Catatan',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,

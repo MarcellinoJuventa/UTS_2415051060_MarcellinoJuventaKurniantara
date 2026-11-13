@@ -3,9 +3,7 @@ import 'package:intl/intl.dart';
 import '../config/app_theme.dart';
 import '../models/coffee_log.dart';
 
-/// Reusable Widget: LogCard
-/// Menampilkan item catatan minuman dari Brew Log lengkap dengan Resep Racikan
-/// hasil kustomisasi user dan Catatan Pribadi.
+/// Reusable Widget: LogCard (100% Bahasa Indonesia)
 class LogCard extends StatelessWidget {
   final CoffeeLog log;
   final VoidCallback onEdit;
@@ -19,6 +17,25 @@ class LogCard extends StatelessWidget {
     required this.onDelete,
     required this.onToggleStatus,
   });
+
+  String _localizeServing(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower == 'ice' || lower == 'iced' || lower == 'dingin') {
+      return 'Dingin';
+    }
+    if (lower == 'hot' || lower == 'panas') {
+      return 'Panas';
+    }
+    return raw;
+  }
+
+  String _localizeSweetness(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('no')) return 'Tanpa Gula';
+    if (lower.contains('less')) return 'Sedikit Manis';
+    if (lower.contains('extra')) return 'Ekstra Manis';
+    return raw;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +90,7 @@ class LogCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              log.category,
+                              _localizeServing(log.category),
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -96,7 +113,7 @@ class LogCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                log.isTried ? 'Favorite' : 'Belum Dicoba',
+                                log.isTried ? 'Favorit' : 'Belum Dicoba',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -135,7 +152,7 @@ class LogCard extends StatelessWidget {
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
-                              '• ${log.sweetnessLevel}',
+                              '• ${_localizeSweetness(log.sweetnessLevel)}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -152,7 +169,6 @@ class LogCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            // Kotak Resep & Catatan
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(10),

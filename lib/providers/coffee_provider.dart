@@ -4,7 +4,7 @@ import '../repositories/coffee_repository.dart';
 
 /// Provider 1: CoffeeProvider
 /// Mengelola state katalog menu minuman (loading, data, error, pencarian,
-/// filter kategori Semua / Coffee / Non-Coffee / Mocktail, serta favorit).
+/// filter kategori Semua / Kopi / Non-Kopi / Minuman Segar, serta favorit).
 class CoffeeProvider extends ChangeNotifier {
   final CoffeeRepository _repository;
 
@@ -15,7 +15,7 @@ class CoffeeProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   String _searchQuery = '';
-  String _selectedCategory = 'Semua'; // 'Semua', 'Coffee', 'Non-Coffee', 'Mocktail'
+  String _selectedCategory = 'Semua'; // 'Semua', 'Kopi', 'Non-Kopi', 'Minuman Segar'
   final Set<int> _favoriteIds = {1, 2};
 
   Future<void> fetchCoffeeCatalog() async {
@@ -38,7 +38,6 @@ class CoffeeProvider extends ChangeNotifier {
   List<CoffeeItem> get filteredItems {
     return _items.where((drink) {
       final matchesCategory = _selectedCategory == 'Semua' ||
-          _selectedCategory == 'All' ||
           drink.category.toLowerCase() == _selectedCategory.toLowerCase();
 
       if (!matchesCategory) return false;

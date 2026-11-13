@@ -4,8 +4,7 @@ import '../config/app_theme.dart';
 import '../models/coffee_log.dart';
 import '../providers/log_provider.dart';
 
-/// Screen 5: Edit Coffee Log Screen
-/// Memungkinkan user mengedit Resep Racikan maupun Catatan Pribadi pada item Brew Log.
+/// Screen 5: Edit Resep & Catatan Screen (100% Bahasa Indonesia)
 class EditLogScreen extends StatefulWidget {
   final CoffeeLog log;
 
@@ -20,16 +19,16 @@ class _EditLogScreenState extends State<EditLogScreen> {
   late final TextEditingController _recipeController;
   late final TextEditingController _noteController;
 
-  late String _servingTemp; // 'Hot' atau 'Ice'
+  late String _servingTemp; // 'Panas' atau 'Dingin'
   late String _selectedSweetness;
   late int _selectedRating;
   late bool _isFavorite;
 
   static const List<String> _sweetnessOptions = [
-    'No Sugar',
-    'Less Sweet',
+    'Tanpa Gula',
+    'Sedikit Manis',
     'Normal',
-    'Extra Sweet',
+    'Ekstra Manis',
   ];
 
   @override
@@ -37,13 +36,28 @@ class _EditLogScreenState extends State<EditLogScreen> {
     super.initState();
     _recipeController = TextEditingController(text: widget.log.recipe);
     _noteController = TextEditingController(text: widget.log.personalNote);
+
     final rawCat = widget.log.category.toLowerCase();
-    _servingTemp = (rawCat == 'ice' || rawCat == 'iced') ? 'Ice' : 'Hot';
-    _selectedSweetness = _sweetnessOptions.contains(widget.log.sweetnessLevel)
-        ? widget.log.sweetnessLevel
-        : 'Normal';
+    _servingTemp =
+        (rawCat == 'dingin' || rawCat == 'ice' || rawCat == 'iced')
+            ? 'Dingin'
+            : 'Panas';
+
+    _selectedSweetness = _normalizeSweetness(widget.log.sweetnessLevel);
     _selectedRating = widget.log.rating.clamp(1, 5);
     _isFavorite = widget.log.isTried;
+  }
+
+  String _normalizeSweetness(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('no') || lower.contains('tanpa')) return 'Tanpa Gula';
+    if (lower.contains('less') || lower.contains('sedikit')) {
+      return 'Sedikit Manis';
+    }
+    if (lower.contains('extra') || lower.contains('ekstra')) {
+      return 'Ekstra Manis';
+    }
+    return 'Normal';
   }
 
   @override
@@ -121,7 +135,6 @@ class _EditLogScreenState extends State<EditLogScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Info Minuman yang Fix
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -175,7 +188,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       ),
                       const SizedBox(height: 18),
 
-                      // Penyajian: Hot atau Ice
+                      // Penyajian: Panas atau Dingin
                       const Text(
                         'Penyajian',
                         style: TextStyle(
@@ -188,14 +201,14 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       SegmentedButton<String>(
                         segments: const [
                           ButtonSegment(
-                            value: 'Hot',
+                            value: 'Panas',
                             icon: Icon(Icons.local_fire_department_outlined),
-                            label: Text('Hot'),
+                            label: Text('Panas'),
                           ),
                           ButtonSegment(
-                            value: 'Ice',
+                            value: 'Dingin',
                             icon: Icon(Icons.ac_unit_rounded),
-                            label: Text('Ice'),
+                            label: Text('Dingin'),
                           ),
                         ],
                         selected: {_servingTemp},
@@ -228,7 +241,6 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Edit Resep Racikan
                       TextFormField(
                         controller: _recipeController,
                         maxLines: 2,
@@ -259,7 +271,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                           ButtonSegment(
                             value: true,
                             icon: Icon(Icons.favorite_border_rounded),
-                            label: Text('Favorite'),
+                            label: Text('Favorit'),
                           ),
                           ButtonSegment(
                             value: false,
@@ -275,7 +287,7 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       const SizedBox(height: 16),
 
                       const Text(
-                        'Rating',
+                        'Penilaian Rasa',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13.5,
@@ -301,7 +313,6 @@ class _EditLogScreenState extends State<EditLogScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // Edit Catatan Pribadi
                       TextFormField(
                         controller: _noteController,
                         maxLines: 3,

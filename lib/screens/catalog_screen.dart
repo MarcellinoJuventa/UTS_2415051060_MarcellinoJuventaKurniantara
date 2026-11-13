@@ -9,7 +9,7 @@ import '../widgets/state_view_widget.dart';
 import 'add_log_screen.dart';
 import 'detail_screen.dart';
 
-/// Screen 2: Menu Screen
+/// Screen 2: Menu Screen (100% Bahasa Indonesia)
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
 
@@ -22,9 +22,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   static const List<String> _categories = [
     'Semua',
-    'Coffee',
-    'Non-Coffee',
-    'Mocktail',
+    'Kopi',
+    'Non-Kopi',
+    'Minuman Segar',
   ];
 
   @override
@@ -62,7 +62,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
       body: Column(
         children: [
-          // Pencarian & Filter Kategori yang bersih
+          // Pencarian & Filter Kategori
           Container(
             color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -145,7 +145,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         icon: Icons.search_off_rounded,
         title: 'Menu Tidak Ditemukan',
         subtitle: 'Coba gunakan kata kunci atau kategori lain.',
-        actionLabel: 'Reset Filter',
+        actionLabel: 'Atur Ulang Filter',
         onAction: () {
           _searchController.clear();
           coffeeProvider.clearFilters();

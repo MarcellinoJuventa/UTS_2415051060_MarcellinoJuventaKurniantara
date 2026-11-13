@@ -10,7 +10,7 @@ import '../widgets/responsive_layout.dart';
 import 'add_log_screen.dart';
 import 'detail_screen.dart';
 
-/// Screen 1: Home Screen (Minimalis & Elegan)
+/// Screen 1: Beranda Screen (Minimalis, Elegan, & 100% Bahasa Indonesia)
 class HomeScreen extends StatelessWidget {
   final ValueChanged<int> onNavigateToTab;
 
@@ -18,9 +18,9 @@ class HomeScreen extends StatelessWidget {
 
   static const List<String> _categories = [
     'Semua',
-    'Coffee',
-    'Non-Coffee',
-    'Mocktail',
+    'Kopi',
+    'Non-Kopi',
+    'Minuman Segar',
   ];
 
   @override
@@ -69,11 +69,11 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Minimalist Hero Card
+                  // Kartu Sambutan Minimalis
                   _buildCleanHero(context, logProvider.logs.length),
                   const SizedBox(height: 20),
 
-                  // Kategori Pilihan (Simple Pills)
+                  // Kategori Pilihan
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -93,7 +93,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
 
-                  // Header Daftar Rekomendasi
+                  // Header Daftar Menu Pilihan
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -189,7 +189,7 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'North Bar',
+                  'North',
                   style: TextStyle(
                     color: AppTheme.warmCaramel,
                     fontSize: 12,
@@ -209,7 +209,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '$savedCount catatan tersimpan di Brew Log',
+                  '$savedCount catatan racikan tersimpan',
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 13,

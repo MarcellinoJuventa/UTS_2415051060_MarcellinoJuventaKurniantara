@@ -169,7 +169,7 @@ class DetailScreen extends StatelessWidget {
                 },
                 icon: const Icon(Icons.bookmark_add_outlined, size: 18),
                 label: const Text(
-                  'Simpan ke Brew Log',
+                  'Simpan ke Catatan',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),

@@ -3,8 +3,8 @@ import '../models/coffee_log.dart';
 import '../repositories/log_repository.dart';
 
 /// Provider 2: LogProvider
-/// Mengelola state jurnal minuman (Brew Log) dari database Supabase:
-/// loading, data, error, filter (Semua / Favorite / Belum Dicoba), serta CRUD.
+/// Mengelola state jurnal minuman dari database Supabase:
+/// loading, data, error, filter (Semua / Favorit / Belum Dicoba), serta CRUD.
 class LogProvider extends ChangeNotifier {
   final LogRepository _repository;
 
@@ -15,7 +15,7 @@ class LogProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isSubmitting = false;
   String? _errorMessage;
-  String _statusFilter = 'Semua'; // 'Semua', 'Favorite', 'Belum Dicoba'
+  String _statusFilter = 'Semua'; // 'Semua', 'Favorit', 'Belum Dicoba'
 
   List<CoffeeLog> get logs => List.unmodifiable(_logs);
   bool get isLoading => _isLoading;
@@ -24,7 +24,7 @@ class LogProvider extends ChangeNotifier {
   String get statusFilter => _statusFilter;
 
   List<CoffeeLog> get filteredLogs {
-    if (_statusFilter == 'Favorite') {
+    if (_statusFilter == 'Favorit') {
       return _logs.where((log) => log.isTried).toList();
     }
     if (_statusFilter == 'Belum Dicoba') {
@@ -34,7 +34,9 @@ class LogProvider extends ChangeNotifier {
   }
 
   int get triedCount => _logs.where((l) => l.isTried).length;
-  int get wishlistCount => _logs.where((l) => !l.isTried).length;
+  int get wishlistCount => _logs.where((l) => !logIsTried(l)).length;
+
+  static bool logIsTried(CoffeeLog l) => l.isTried;
 
   double get averageRating {
     if (_logs.isEmpty) return 0.0;

@@ -34,7 +34,7 @@ class CoffeeLog {
         return customNote.substring(8, endIdx).trim();
       }
     }
-    return 'Espresso, Fresh Milk';
+    return 'Espresso, Susu Segar';
   }
 
   /// Mengambil bagian Catatan Pribadi dari `customNote`
